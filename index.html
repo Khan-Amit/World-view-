@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UESI Predictor + Regional Living Status</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0b0e14;
+            color: #e6edf5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 960px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #f0b34b, #f7d875);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subhead {
+            color: #8b9bb5;
+            margin-bottom: 24px;
+            border-left: 3px solid #f0b34b;
+            padding-left: 14px;
+            font-size: 0.95rem;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+        @media (max-width: 700px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        .card {
+            background: #151e28;
+            border-radius: 16px;
+            padding: 20px 22px;
+            border: 1px solid #26323f;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            margin-bottom: 18px;
+        }
+        .card h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #9ab0cc;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #26323f;
+            padding-bottom: 10px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .input-group label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #b6c9e0;
+        }
+        .input-group input, .input-group select {
+            background: #0f1721;
+            border: 1px solid #2d3e4f;
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 500;
+            outline: none;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .input-group select option {
+            background: #0f1721;
+            color: #fff;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #f0b34b;
+            box-shadow: 0 0 0 3px rgba(240, 179, 75, 0.15);
+        }
+        .input-group input[readonly] {
+            opacity: 0.7;
+            cursor: default;
+            border-color: #1f2d3b;
+        }
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 10px 0 6px 0;
+        }
+        .btn {
+            background: #26323f;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #e6edf5;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 1 1 auto;
+            border: 1px solid #3b4c5e;
+        }
+        .btn-primary {
+            background: #f0b34b;
+            color: #0b0e14;
+            border-color: #f0b34b;
+            font-weight: 700;
+        }
+        .btn-primary:hover {
+            background: #fcc45e;
+            transform: scale(1.02);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #4a5f74;
+        }
+        .btn-outline:hover {
+            background: #1f2b38;
+            border-color: #8ba0b8;
+        }
+        .result-box {
+            background: #0f1721;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-top: 12px;
+            border-left: 4px solid #f0b34b;
+        }
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a2632;
+        }
+        .stat:last-child {
+            border-bottom: none;
+        }
+        .stat-label {
+            color: #8b9bb5;
+        }
+        .stat-value {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            margin-left: 8px;
+        }
+        .badge-red { background: #5f2128; color: #f9b2b2; }
+        .badge-yellow { background: #5f4b1e; color: #fadf8a; }
+        .badge-green { background: #1a4a3a; color: #8de0b0; }
+        .badge-blue { background: #1a3455; color: #8bbaf5; }
+        .badge-gray { background: #2a2f3a; color: #9aa8b9; }
+        .loading {
+            color: #f0b34b;
+            animation: pulse 1.2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+        .footnote {
+            margin-top: 24px;
+            font-size: 0.75rem;
+            color: #4f657c;
+            text-align: center;
+            border-top: 1px solid #1a2632;
+            padding-top: 18px;
+        }
+        .region-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .region-degrading { background: #5f2128; color: #f9b2b2; }
+        .region-stable { background: #5f4b1e; color: #fadf8a; }
+        .region-improving { background: #1a4a3a; color: #8de0b0; }
+        .inline-flex { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .mt-2 { margin-top: 12px; }
+        .text-muted { color: #8b9bb5; font-size: 0.85rem; }
+        .region-card {
+            background: #0f1721;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 10px;
+            border: 1px solid #1a2632;
+        }
+        .region-card .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 0.9rem;
+        }
+        .region-card .row .label { color: #8b9bb5; }
+        .region-card .row .value { font-weight: 500; }
+        .flag { font-size: 1.3rem; margin-right: 4px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
+        <div>
+            <h1>⚡ UESI Predictor</h1>
+            <div class="subhead">Unified Economic Situation Index · 3–6 Month Forward Engine</div>
+        </div>
+        <div style="background:#151e28; padding:6px 16px; border-radius:40px; border:1px solid #26323f; font-size:0.8rem; color:#9ab0cc;">
+            <span id="lastUpdate">Manual Input</span>
+        </div>
+    </div>
+
+    <!-- LIVE DATA FETCH -->
+    <div class="card" style="background: #101a24;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+            <span style="font-weight:500;">📡 Live Commodity Feeds (No API Key)</span>
+            <button class="btn btn-outline" id="fetchLiveBtn" onclick="fetchLivePrices()">↻ Fetch Gold / Silver / Oil</button>
+        </div>
+        <div id="fetchStatus" style="margin-top: 8px; font-size: 0.85rem; color: #8b9bb5;"></div>
+    </div>
+
+    <!-- INPUTS -->
+    <div class="grid-2">
+        <div class="card">
+            <h3>📊 Macro Fundamentals</h3>
+            <div class="input-group">
+                <label>Global GDP Growth (%, annualized)</label>
+                <input type="number" id="gdp" value="2.5" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Living Cost / Inflation (%, CPI)</label>
+                <input type="number" id="inflation" value="4.0" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Central Bank Interest Rate (%, r)</label>
+                <input type="number" id="rate" value="4.5" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Household Debt-to-Income Ratio (D/I, e.g. 1.2 = 120%)</label>
+                <input type="number" id="debt_income" value="1.2" step="0.01">
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>💰 Asset Prices (USD)</h3>
+            <div class="input-group">
+                <label>Gold (XAU, $/oz)</label>
+                <input type="number" id="gold" value="3750" step="1">
+            </div>
+            <div class="input-group">
+                <label>Silver (XAG, $/oz)</label>
+                <input type="number" id="silver" value="70" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Crude Oil (WTI, $/bbl)</label>
+                <input type="number" id="oil" value="78" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Oil Change (last 3 months, %)</label>
+                <input type="number" id="oil_lag" value="-5.0" step="0.1">
+            </div>
+        </div>
+    </div>
+
+    <!-- REGION SELECTOR -->
+    <div class="card" style="border-left: 4px solid #4a8bb5;">
+        <h3>🌍 Region Living Status — Based on Real 2026 Data</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <div style="flex: 2; min-width: 180px;">
+                <select id="regionSelect" onchange="updateRegionDisplay()" style="background:#0f1721; border:1px solid #2d3e4f; border-radius:8px; padding:10px 14px; color:#fff; font-size:1rem; width:100%;">
+                    <option value="usa">🇺🇸 USA</option>
+                    <option value="sea">🌏 Southeast Asia</option>
+                    <option value="china">🇨🇳 China</option>
+                    <option value="africa">🌍 Africa</option>
+                    <option value="asia">🌏 Asia (General)</option>
+                    <option value="bangladesh">🇧🇩 Bangladesh</option>
+                    <option value="india">🇮🇳 India</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 120px;">
+                <span id="regionStatusBadge" class="badge badge-red">🔴 Degrading</span>
+            </div>
+        </div>
+        <div id="regionDetails" class="region-card">
+            <div class="row"><span class="label">Status</span><span class="value" id="rStatus">Degrading</span></div>
+            <div class="row"><span class="label">Inflation (CPI)</span><span class="value" id="rInflation">4.25%</span></div>
+            <div class="row"><span class="label">Real Income Growth</span><span class="value" id="rIncome">-0.71%</span></div>
+            <div class="row"><span class="label">Key Driver</span><span class="value" id="rDriver">Wages trail inflation; savings rate crashed</span></div>
+            <div class="row"><span class="label">Data Source</span><span class="value" id="rSource" style="font-size:0.75rem; color:#6a7f99;">BLS, BEA May 2026</span></div>
+        </div>
+    </div>
+
+    <!-- ACTION -->
+    <div style="display: flex; gap: 14px; margin: 6px 0 18px 0; flex-wrap: wrap;">
+        <button class="btn btn-primary" id="calcBtn" onclick="runPrediction()" style="flex: 2;">🚀 Run 6-Month Prediction</button>
+        <button class="btn btn-outline" onclick="resetDefaults()" style="flex: 1;">↺ Reset to Baseline</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="card" id="resultCard" style="border-left: 4px solid #f0b34b;">
+        <h3>📈 PREDICTION OUTPUT (3–6 MONTH FORWARD)</h3>
+        <div id="resultContent">
+            <div style="color: #8b9bb5; text-align: center; padding: 18px 0;">Adjust inputs and click "Run Prediction" to generate forecasts.</div>
+        </div>
+    </div>
+
+    <div class="footnote">
+        ⚡ Formulas: UESI = ΔGDP – ΔInflation – Ψ + 0.1·(Gold/Silver – 60) · Ψ = (Debt/Income)·(Rate – Inflation) · Recovery initiates when UESI crosses > +0.5 · Comfortable Recovery at > +1.5<br>
+        🌍 Regional status based on real 2026 data from BLS, BEA, ADB, OECD, IMF, World Bank, and national statistics.
+    </div>
+</div>
+
+<script>
+    // ================================================================
+    //  REGION DATASET — Real 2026 Data
+    // ================================================================
+    const REGION_DATA = {
+        usa: {
+            name: 'USA',
+            flag: '🇺🇸',
+            status: 'Degrading',
+            statusClass: 'badge-red',
+            inflation: '4.25%',
+            realIncome: '-0.71%',
+            driver: 'Wages trail inflation; savings rate crashed to 3.7%',
+            source: 'BLS, BEA May 2026',
+            detail: 'CPI 4.25% · Real wages -0.71% · Households +$3,100 extra costs · Savings 3.7%'
+        },
+        sea: {
+            name: 'Southeast Asia',
+            flag: '🌏',
+            status: 'Degrading',
+            statusClass: 'badge-red',
+            inflation: '3.6% (ASEAN)',
+            realIncome: 'Negative',
+            driver: 'Poor spend 16% of income on electricity; food/fuel squeeze',
+            source: 'ADB, IEA, Goldman Sachs June 2026',
+            detail: 'ADB growth 4.7% · Philippines/Thailand >10% CPI · Energy prices forcing cuts'
+        },
+        china: {
+            name: 'China',
+            flag: '🇨🇳',
+            status: 'Improving',
+            statusClass: 'badge-green',
+            inflation: '0.9%',
+            realIncome: '+4.0%',
+            driver: 'GDP 5.0% · Rural income +5.4% real · CPI well below wages',
+            source: 'NBS China Q1 2026',
+            detail: 'GDP 5.0% · Real income +4.0% · Rural real +5.4% · CPI only 0.9%'
+        },
+        africa: {
+            name: 'Africa',
+            flag: '🌍',
+            status: 'Degrading',
+            statusClass: 'badge-red',
+            inflation: '4.5% (S.Africa)',
+            realIncome: '-1.7%',
+            driver: 'Fuel at 4-year highs · Food/transport costs surging',
+            source: 'IMF, PayInc, African News Agency May 2026',
+            detail: 'Sub-Saharan growth 4.3% · S.Africa real salaries -1.7% · Fuel 4-year highs'
+        },
+        asia: {
+            name: 'Asia (General)',
+            flag: '🌏',
+            status: 'Degrading',
+            statusClass: 'badge-red',
+            inflation: 'Elevated',
+            realIncome: 'Negative',
+            driver: '83% say inflation makes monthly costs harder (up from 44%)',
+            source: 'Sun Life Financial Resilience Index June 2026',
+            detail: '83% harder to meet costs · 95% hit by food inflation · 61% can survive ≤6 months without income'
+        },
+        bangladesh: {
+            name: 'Bangladesh',
+            flag: '🇧🇩',
+            status: 'Degrading',
+            statusClass: 'badge-red',
+            inflation: '8.6–9.0%',
+            realIncome: 'Negative',
+            driver: 'Wages below inflation for 51 straight months · GDP only 3.9%',
+            source: 'BBS, ADB, World Bank, CPD April–May 2026',
+            detail: 'Inflation ~9% · Wages +8.1% vs inflation 8.7% · 51 months of real wage erosion'
+        },
+        india: {
+            name: 'India',
+            flag: '🇮🇳',
+            status: 'Stable',
+            statusClass: 'badge-yellow',
+            inflation: '3.5–4.6%',
+            realIncome: 'Flat/Negative',
+            driver: 'GDP 7.7% but real wages shrinking (5% salary vs 5.1% inflation)',
+            source: 'OECD, RBI, GoI data April–June 2026',
+            detail: 'GDP 7.7% · Inflation 3.5-4.6% · Rupee -7% · Real purchasing power shrinking'
+        }
+    };
+
+    function updateRegionDisplay() {
+        const key = document.getElementById('regionSelect').value;
+        const data = REGION_DATA[key];
+        if (!data) return;
+
+        document.getElementById('regionStatusBadge').textContent = (data.status === 'Degrading' ? '🔴 ' : data.status === 'Stable' ? '🟡 ' : '🟢 ') + data.status;
+        document.getElementById('regionStatusBadge').className = 'badge ' + data.statusClass;
+        document.getElementById('rStatus').textContent = data.status;
+        document.getElementById('rInflation').textContent = data.inflation;
+        document.getElementById('rIncome').textContent = data.realIncome;
+        document.getElementById('rDriver').textContent = data.driver;
+        document.getElementById('rSource').textContent = data.source;
+    }
+
+    // ================================================================
+    //  CORE MATH ENGINE
+    // ================================================================
+    function calculateEngine(gdp, inflation, rate, debt_income, gold, silver, oil, oil_lag) {
+        const psi = (debt_income) * (rate - inflation) / 100;
+        const gsRatio = gold / silver;
+        const uesi = gdp - inflation - psi + 0.1 * (gsRatio - 60);
+        const realRate = rate - inflation;
+        const gold_3m = gold * (1 - 1.2 * (realRate / 100) + 0.5 * psi);
+        const oil_3m = oil * (1 + 0.6 * (gdp / 100) - 0.3 * (oil_lag / 100));
+        const goldChange = (gold_3m - gold) / gold;
+        const silver_3m = silver * (1 + 0.5 * goldChange + 0.4 * (gdp / 100) - 0.3 * (oil_lag / 100));
+
+        let regime, regimeClass, recoveryETA;
+        if (uesi > 1.5) {
+            regime = "Total Comfortable Recovery (Expansion)";
+            regimeClass = "badge-green";
+            recoveryETA = "✅ Already in recovery.";
+        } else if (uesi > 0.5) {
+            regime = "Recovery Initiated";
+            regimeClass = "badge-blue";
+            recoveryETA = "Recovery is underway. Full comfort in ~6 months.";
+        } else if (uesi > -0.5) {
+            regime = "Stagnant Transition (Mixed)";
+            regimeClass = "badge-yellow";
+            recoveryETA = "Waiting for catalyst. Initiation in ~4–6 months if oil falls.";
+        } else if (uesi > -1.5) {
+            regime = "Recessionary Pressure (Downturn)";
+            regimeClass = "badge-red";
+            recoveryETA = "Recovery delayed. Initiation not expected before H2 2026.";
+        } else {
+            regime = "⚠️ Systemic Deflationary Bust";
+            regimeClass = "badge-red";
+            recoveryETA = "CRISIS MODE. No recovery expected within 12 months.";
+        }
+
+        let initMonths = null, fullMonths = null;
+        if (uesi < 0.5) {
+            const improvementRate = (oil_lag > -10) ? 0.08 : 0.15;
+            const gapToInit = 0.5 - uesi;
+            const gapToFull = 1.5 - uesi;
+            initMonths = Math.max(2, Math.round(gapToInit / improvementRate));
+            fullMonths = Math.max(6, Math.round(gapToFull / improvementRate));
+        } else if (uesi < 1.5) {
+            fullMonths = Math.round((1.5 - uesi) / 0.15);
+            initMonths = 0;
+        } else {
+            initMonths = 0;
+            fullMonths = 0;
+        }
+
+        return { psi, gsRatio, uesi, gold_3m, oil_3m, silver_3m, regime, regimeClass, recoveryETA, initMonths, fullMonths };
+    }
+
+    // ================================================================
+    //  UI RENDERER
+    // ================================================================
+    function runPrediction() {
+        const gdp = parseFloat(document.getElementById('gdp').value) || 0;
+        const inflation = parseFloat(document.getElementById('inflation').value) || 0;
+        const rate = parseFloat(document.getElementById('rate').value) || 0;
+        const debt_income = parseFloat(document.getElementById('debt_income').value) || 0;
+        const gold = parseFloat(document.getElementById('gold').value) || 1;
+        const silver = parseFloat(document.getElementById('silver').value) || 1;
+        const oil = parseFloat(document.getElementById('oil').value) || 1;
+        const oil_lag = parseFloat(document.getElementById('oil_lag').value) || 0;
+
+        const result = calculateEngine(gdp, inflation, rate, debt_income, gold, silver, oil, oil_lag);
+
+        let timelineHTML = "";
+        if (result.initMonths !== null && result.fullMonths !== null) {
+            timelineHTML = `
+                <div class="stat">
+                    <span class="stat-label">⏳ Recovery Initiation (UESI > +0.5)</span>
+                    <span class="stat-value">${result.initMonths === 0 ? '✅ Achieved' : result.initMonths + ' months (est.)'}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">🌱 Total Comfortable Recovery (UESI > +1.5)</span>
+                    <span class="stat-value">${result.fullMonths === 0 ? '✅ Achieved' : result.fullMonths + ' months (est.)'}</span>
+                </div>
+            `;
+        }
+
+        document.getElementById('resultContent').innerHTML = `
+            <div style="display:grid; gap:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; background:#0f1721; padding:12px 16px; border-radius:10px;">
+                    <span style="font-weight:600; font-size:1.2rem;">UESI Score</span>
+                    <span style="font-size:1.8rem; font-weight:700; letter-spacing:-1px;">${result.uesi.toFixed(2)}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                    <span style="font-weight:500;">Current Regime</span>
+                    <span class="badge ${result.regimeClass}">${result.regime}</span>
+                </div>
+                <div style="background:#0f1721; border-radius:10px; padding:12px 14px; margin-top:4px;">
+                    <div class="stat">
+                        <span class="stat-label">🧾 Debt-Squeeze (Ψ)</span>
+                        <span class="stat-value">${(result.psi * 100).toFixed(2)}%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">📊 Gold/Silver Ratio</span>
+                        <span class="stat-value">${result.gsRatio.toFixed(1)}</span>
+                    </div>
+                </div>
+                <div style="border-top:1px solid #1a2632; padding-top:10px;">
+                    <div style="font-weight:600; margin-bottom:6px;">📈 3-Month Price Forecasts</div>
+                    <div class="stat">
+                        <span class="stat-label">🥇 Gold (3m)</span>
+                        <span class="stat-value" style="color:#f0b34b;">$${result.gold_3m.toFixed(0)}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">🥈 Silver (3m)</span>
+                        <span class="stat-value" style="color:#b0c4de;">$${result.silver_3m.toFixed(1)}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">🛢️ Crude Oil (3m)</span>
+                        <span class="stat-value" style="color:#d48a6a;">$${result.oil_3m.toFixed(1)}</span>
+                    </div>
+                </div>
+                ${timelineHTML}
+                <div style="background:#101a24; border-radius:8px; padding:10px 14px; font-size:0.9rem; color:#b6c9e0; margin-top:6px;">
+                    ${result.recoveryETA}
+                </div>
+            </div>
+        `;
+
+        document.getElementById('lastUpdate').innerHTML = 'Prediction @ ' + new Date().toLocaleTimeString();
+    }
+
+    // ================================================================
+    //  LIVE DATA FETCHER
+    // ================================================================
+    async function fetchLivePrices() {
+        const btn = document.getElementById('fetchLiveBtn');
+        const status = document.getElementById('fetchStatus');
+        btn.disabled = true;
+        btn.textContent = '⏳ Fetching...';
+        status.innerHTML = '<span class="loading">Connecting to markets...</span>';
+
+        try {
+            const goldRes = await fetch('https://api.gold-api.com/price/XAU');
+            const goldData = await goldRes.json();
+            const goldPrice = parseFloat(goldData.price);
+
+            const silverRes = await fetch('https://api.gold-api.com/price/XAG');
+            const silverData = await silverRes.json();
+            const silverPrice = parseFloat(silverData.price);
+
+            const oilRes = await fetch('https://api.gold-api.com/price/WTI');
+            const oilData = await oilRes.json();
+            const oilPrice = parseFloat(oilData.price);
+
+            if (!isNaN(goldPrice) && goldPrice > 0) document.getElementById('gold').value = goldPrice;
+            if (!isNaN(silverPrice) && silverPrice > 0) document.getElementById('silver').value = silverPrice;
+            if (!isNaN(oilPrice) && oilPrice > 0) document.getElementById('oil').value = oilPrice;
+
+            status.innerHTML = `✅ Live prices loaded: Gold $${goldPrice} | Silver $${silverPrice} | Oil $${oilPrice}`;
+            document.getElementById('lastUpdate').innerHTML = 'Live @ ' + new Date().toLocaleTimeString();
+        } catch (err) {
+            status.innerHTML = '❌ Failed to fetch live data. Using manual inputs. (CORS or network issue)';
+            console.warn('Fetch error:', err);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '↻ Fetch Gold / Silver / Oil';
+        }
+    }
+
+    // ================================================================
+    //  RESET
+    // ================================================================
+    function resetDefaults() {
+        document.getElementById('gdp').value = '2.5';
+        document.getElementById('inflation').value = '4.0';
+        document.getElementById('rate').value = '4.5';
+        document.getElementById('debt_income').value = '1.2';
+        document.getElementById('gold').value = '3750';
+        document.getElementById('silver').value = '70';
+        document.getElementById('oil').value = '78';
+        document.getElementById('oil_lag').value = '-5.0';
+        document.getElementById('resultContent').innerHTML = `
+            <div style="color: #8b9bb5; text-align: center; padding: 18px 0;">Defaults restored. Click "Run Prediction".</div>
+        `;
+        document.getElementById('lastUpdate').innerHTML = 'Manual Reset';
+        document.getElementById('regionSelect').value = 'usa';
+        updateRegionDisplay();
+    }
+
+    // ================================================================
+    //  INIT
+    // ================================================================
+    window.onload = function() {
+        updateRegionDisplay();
+        runPrediction();
+    };
+</script>
+</body>
+</html>
