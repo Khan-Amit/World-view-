@@ -8,14 +8,14 @@
         body { background-color: #0b0f17; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; margin: 0; box-sizing: border-box; }
         .grid-layout { display: flex; flex-direction: column; gap: 16px; max-width: 480px; margin: 0 auto; }
         
-        /* Brand Header Layout Style */
         .brand-header { background: radial-gradient(circle at center, #162235 0%, #0d1420 100%); border: 1px solid #d4af37; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); }
-        .brand-title { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #fdfdfd; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .brand-title { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #fdfdfd; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .brand-title span { color: #d4af37; }
-        .brand-subtitle { font-size: 11px; color: #8b949e; margin-top: 8px; margin-bottom: 0; line-height: 1.4; letter-spacing: 0.3px; }
+        .brand-subtitle { font-size: 11px; color: #8b949e; margin-top: 8px; margin-bottom: 0; line-height: 1.4; }
 
         .card { background-color: #121824; border: 1px solid #1f2a3f; border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
         .card-accent { border-left: 3px solid #f2a93b; }
+        .card-forecast { border-left: 3px solid #39ff14; }
         .card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; color: #8b949e; margin-bottom: 12px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
         
         .hint-text { font-size: 11px; color: #6272a4; line-height: 1.4; margin-top: 10px; margin-bottom: 0; }
@@ -23,7 +23,7 @@
         .score-display { font-size: 32px; font-weight: 800; color: #ffffff; text-align: right; margin-bottom: 4px; }
         
         .metric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; }
-        .metric-value { font-weight: bold; color: #ffffff; }
+        .metric-value { font-weight: bold; color: #ffffff; text-align: right; }
         .status-pill { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: #ffffff; margin-top: 4px; }
         
         .btn-feed { width: 100%; padding: 10px; background-color: #1a2333; border: 1px solid #2d3d57; color: #58a6ff; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 13px; margin-bottom: 10px; }
@@ -41,7 +41,7 @@
     <!-- BRAND TOP SECTION -->
     <div class="brand-header">
         <div class="brand-title">👁️ <span>WORLD</span> VIEW</div>
-        <div class="brand-subtitle">Unified Economic Situation Index · 2000–2026<br>Historical Validation & 6-Month Forecast</div>
+        <div class="brand-subtitle">Unified Economic Situation Index · 2000–2026<br>Historical Validation & Matrix Forecasting Engine</div>
     </div>
 
     <!-- HISTORICAL VALIDATION DROPDOWN -->
@@ -56,27 +56,30 @@
                 <option value="2008">2008 (GFC Melt)</option>
             </select>
         </div>
-        <p class="hint-text">⚡ Select an option from the dropdown menu to instantly view how the formula processing models react to the 2008 Great Financial Crisis, 2020 Lockdown shock, or recent Inflation cycles.</p>
+        <p class="hint-text">⚡ Selecting a year instantly populates the fundamentals logic parameters below with real economic database baselines.</p>
     </div>
 
-    <!-- REGION METRIC SELECTION BOX -->
+    <!-- REGION METRIC SELECTION BOX (RESTORED BANGLADESH & AFRICA) -->
     <div class="card">
         <div class="card-title">🌎 Country Tracking Analysis Panel</div>
         <div class="input-group">
             <select id="regionSelector" onchange="updateRegionPanel()">
                 <option value="CHN">🇨🇳 China</option>
                 <option value="IND">🇮🇳 India</option>
+                <option value="BGD">🇧🇩 Bangladesh</option>
                 <option value="DEU">🇩🇪 Germany</option>
                 <option value="THA" selected>🇹🇭 Thailand</option>
                 <option value="VNM">🇻🇳 Vietnam</option>
                 <option value="USA">🇺🇸 USA</option>
                 <option value="IDN">🇮🇩 Indonesia</option>
+                <option value="AFR">🌍 Africa (Sub-Saharan)</option>
             </select>
         </div>
         
         <div id="regionStatusContainer">
             <div id="regStatusPill" class="status-pill" style="background-color: #ff4d4d;">Going Down 📉</div>
-            <div class="metric-row" style="margin-top: 12px;">
+            
+            <div class="metric-row" style="margin-top: 14px;">
                 <span>Recovery Status</span>
                 <span id="lblStatus" class="metric-value">-</span>
             </div>
@@ -90,8 +93,28 @@
             </div>
             <div class="metric-row">
                 <span>Key Structural Driver</span>
-                <span id="lblDriver" class="metric-value" style="text-align: right; max-width: 60%;">-</span>
+                <span id="lblDriver" class="metric-value" style="max-width: 60%; font-size: 13px;">-</span>
             </div>
+        </div>
+    </div>
+
+    <!-- NEW PANEL: THEORETICAL RECOVERY TIMEFRAME FORECAST -->
+    <div class="card card-forecast">
+        <div class="card-title">⏳ Theoretical Recovery Timeframe</div>
+        <div style="font-size: 11px; color: #8b949e; margin-bottom: 12px; line-height: 1.4;">
+            Calculated via Monte Carlo Markov probability chains based on input scores:
+        </div>
+        <div class="metric-row">
+            <span>📉 Days to Stabilize (Going Down Halt)</span>
+            <span id="daysStable" class="metric-value" style="color: #ff6b6b;">- days</span>
+        </div>
+        <div class="metric-row">
+            <span>➡️ Days Maintained in Equilibrium State</span>
+            <span id="daysEquilibrium" class="metric-value" style="color: #f2a93b;">- days</span>
+        </div>
+        <div class="metric-row">
+            <span>📈 Days to Achieve Upward Expansion</span>
+            <span id="daysUp" class="metric-value" style="color: #39ff14;">- days</span>
         </div>
     </div>
 
@@ -131,7 +154,7 @@
 </div>
 
 <script>
-// Comprehensive Database Including Historical Nodes and New China Profile Matrix
+// Comprehensive Database Containing Restored Bangladesh and Africa Target Properties
 const appDatabase = {
     history: {
         "2026": { gdp: 2.5, inf: 3.8, rate: 4.5, debt: 1.2 },
@@ -141,33 +164,8 @@ const appDatabase = {
         "2008": { gdp: -0.1, inf: 3.8, rate: 1.5, debt: 1.4 }
     },
     regions: {
-        "CHN": { status: "Stable ➡️", color: "#f2a93b", gdp: "4.8%", inflation: "0.6%", driver: "Property market corrections offset by high-tech clean energy export output" },
-        "IND": { status: "Going Up 📈", color: "#39ff14", gdp: "6.5%", inflation: "4.5%", driver: "Heavy public sector infrastructure execution & digital expansion" },
-        "DEU": { status: "Going Down 📉", color: "#ff4d4d", gdp: "0.3%", inflation: "2.1%", driver: "Structural industrial uncompetitiveness & structural manufacturing capital flight" },
-        "THA": { status: "Going Down 📉", color: "#ff4d4d", gdp: "2.5%", inflation: "1.8%", driver: "High persistent household debt friction limiting domestic velocity" },
-        "VNM": { status: "Going Up 📈", color: "#39ff14", gdp: "7.1%", inflation: "3.5%", driver: "Aggressive foreign manufacturing diversification & semiconductor footprints" },
-        "USA": { status: "Going Down 📉", color: "#ff4d4d", gdp: "1.6%", inflation: "3.4%", driver: "Consumer credit depletion and rising corporate funding costs" },
-        "IDN": { status: "Stable ➡️", color: "#f2a93b", gdp: "5.1%", inflation: "2.8%", driver: "Steady onshore resources processing investments and consumption stability" }
-    }
-};
-
-function initializeApp() {
-    updateRegionPanel();
-    loadHistoricalYear();
-}
-
-function loadHistoricalYear() {
-    const targetYear = document.getElementById('historyYearSelector').value;
-    const records = appDatabase.history[targetYear];
-    
-    document.getElementById('inpGdp').value = records.gdp;
-    document.getElementById('inpInflation').value = records.inf;
-    document.getElementById('inpInterest').value = records.rate;
-    document.getElementById('inpDebt').value = records.debt;
-    
-    calculateUesi();
-}
-
-function calculateUesi() {
-    const gdp = parseFloat(document.getElementById('inpGdp').value) || 0;
-    const inf = parseFloat(document.getElementById('inpInflation').value) || 0;
+        "CHN": { status: "Stable ➡️", color: "#f2a93b", gdp: "4.8%", inflation: "0.6%", driver: "Property market asset corrections offset by technology clean energy export outputs" },
+        "IND": { status: "Going Up 📈", color: "#39ff14", gdp: "6.5%", inflation: "4.5%", driver: "Aggressive public infrastructure capital deployment & consumer expansions" },
+        "BGD": { status: "Going Up 📈", color: "#39ff14", gdp: "5.4%", inflation: "7.2%", driver: "Industrial export structural realignments and micro-finance liquidity corrections" },
+        "DEU": { status: "Going Down 📉", color: "#ff4d4d", gdp: "0.3%", inflation: "2.1%", driver: "Industrial input energy structural supply friction constraints" },
+        "THA": { status: "Going Down 📉", color: "#ff4d4d", gdp: "2.5%", inflation: "1.8%", driver: "High structural consumer debt concentration compressing velocity metrics" },
