@@ -1,23 +1,57 @@
-### AL ###
-#Template for AL projects for Dynamics 365 Business Central
-#launch.json folder
-.vscode/
-#Cache folder
-.alcache/
-#Symbols folder
-.alpackages/
-#Snapshots folder
-.snapshots/
-#Testing Output folder
-.output/
-#Extension App-file
+# ESP32 / Arduino
+*.ino.pre
+*.o
+*.d
+*.elf
+*.hex
+*.eep
+*.lst
+*.sym
+*.lss
+*.map
+*.tmp
+*.build/
+*.pioenvs/
+*.piolibdeps/
+
+# Compiled
+*.exe
+*.out
 *.app
-#Rapid Application Development File
-rad.json
-#Translation Base-file
-*.g.xlf
-#License-files
-*.bclicense
-*.flf
-#Test results file
-TestResults.xml
+*.dll
+*.so
+*.dylib
+*.bin
+
+# IDE
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.vs/
+*.suo
+*.user
+
+# Environment
+.env
+.env.local
+secrets.h
+config.h
+
+# Logs
+*.log
+logs/
+
+# Keep essential files
+!index.html
+!README.md
+!*.ino
+!*.cpp
+
+# Keep docs
+!docs/
+!*.md
+!LICENSE
