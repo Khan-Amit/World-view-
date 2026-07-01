@@ -21,6 +21,7 @@
         .btn-feed { width: 100%; padding: 10px; background-color: #1a2333; border: 1px solid #2d3d57; color: #58a6ff; font-weight: bold; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; }
         .btn-feed:hover { background-color: #212c41; }
         .feed-output { font-family: monospace; font-size: 12px; color: #39ff14; background-color: #070a10; padding: 8px; border-radius: 4px; margin-top: 8px; display: none; word-break: break-all; }
+        .timeframe-banner { background-color: #161b22; border-left: 3px solid #58a6ff; font-size: 11px; padding: 6px 10px; color: #8b949e; border-radius: 0 4px 4px 0; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -58,42 +59,46 @@
             <span>🛢️ Crude Oil (3m)</span>
             <span class="forecast-val" id="fcOil">$80.3</span>
         </div>
-        <div style="margin-top: 12px; font-size: 12px; color: #8b949e; line-height: 1.4;">
-            ⏳ Recovery Initiation (UESI &gt; +0.5): <strong>33 months (est.)</strong><br>
-            🌱 Total Comfortable Recovery: <strong>46 months (est.)</strong>
-        </div>
     </div>
 
     <!-- BLOCK 3: REGION LIVING STATUS DATA PANEL -->
     <div class="card">
-        <div class="card-title">🌎 Region Living Status - Based on Real Data</div>
+        <div class="card-title">🌎 Region Living Status</div>
+        <div class="timeframe-banner">🗓️ DATA FORECAST TIMEFRAME: 2025 – 2026 Matrix</div>
         <div class="input-group">
             <select id="regionSelector" onchange="updateRegionPanel()">
-                <option value="USA">🇺🇸 USA</option>
+                <option value="DEU">🇩🇪 Germany</option>
+                <option value="FRA">🇫🇷 France</option>
+                <option value="IND">🇮🇳 India</option>
+                <option value="BGD">🇧🇩 Bangladesh</option>
                 <option value="THA" selected>🇹🇭 Thailand</option>
+                <option value="IDN">🇮🇩 Indonesia</option>
+                <option value="PHL">🇵🇭 Philippines</option>
+                <option value="VNM">🇻🇳 Vietnam</option>
+                <option value="AFR">🌍 Africa (Sub-Saharan Region)</option>
             </select>
         </div>
         
         <div id="regionStatusContainer">
-            <div id="regStatusPill" class="status-pill" style="background-color: #ff4d4d;">Degrading</div>
+            <div id="regStatusPill" class="status-pill" style="background-color: #ff4d4d;">Going Down 📉</div>
             <div class="metric-row" style="margin-top: 12px;">
-                <span>Status</span>
-                <span id="lblStatus" class="metric-value">Degrading</span>
+                <span>Recovery Status</span>
+                <span id="lblStatus" class="metric-value" style="color: #ff6b6b;">Going Down 📉</span>
+            </div>
+            <div class="metric-row">
+                <span>Real GDP Growth</span>
+                <span id="lblGdp" class="metric-value">-</span>
             </div>
             <div class="metric-row">
                 <span>Inflation (CPI)</span>
                 <span id="lblInflation" class="metric-value">-</span>
             </div>
             <div class="metric-row">
-                <span>Real Income Growth</span>
-                <span id="lblIncome" class="metric-value">-</span>
-            </div>
-            <div class="metric-row">
-                <span>Key Driver</span>
+                <span>Key Risk Driver</span>
                 <span id="lblDriver" class="metric-value" style="text-align: right; max-width: 60%;">-</span>
             </div>
             <div class="metric-row" style="font-size: 11px; color: #485264; margin-top: 6px;">
-                <span>Data Source</span>
+                <span>Primary Benchmark Source</span>
                 <span id="lblSource">-</span>
             </div>
         </div>
@@ -108,7 +113,7 @@
 
     <!-- BLOCK 5: DATA ENTRY PANEL -->
     <div class="card">
-        <div class="card-title">📊 Macro Fundamentals</div>
+        <div class="card-title">📊 Macro Fundamentals (Global Base)</div>
         <div class="input-group">
             <label>Global GDP Growth (%, annualized)</label>
             <input type="number" id="inpGdp" step="0.1" value="2.5" oninput="calculateUesi()">
@@ -122,7 +127,7 @@
             <input type="number" id="inpInterest" step="0.1" value="4.5" oninput="calculateUesi()">
         </div>
         <div class="input-group">
-            <label>Household Debt-to-Income Ratio (D/I, e.g. 1.2 = 120%)</label>
+            <label>Household Debt-to-Income Ratio (D/I)</label>
             <input type="number" id="inpDebt" step="0.1" value="1.2" oninput="calculateUesi()">
         </div>
     </div>
@@ -130,13 +135,18 @@
 </div>
 
 <script>
-// Hardcoded Local Configuration Matrix
+// Comprehensive Regional Macro Matrix Data Array (Timeframe: 2025-2026 Forecasts)
 const staticFallbackData = {
-    macro: { gdpGrowth: 2.5, inflation: 4.0, interestRate: 4.5, debtToIncome: 1.2 },
-    commodities: { gold3m: 3739, silver3m: 71.6, oil3m: 80.3 },
     regions: {
-        "USA": { status: "Degrading", color: "#ff4d4d", inflation: "3.4%", income: "-0.2%", driver: "Credit Card Delinquencies", source: "Fed Reserve" },
-        "THA": { status: "Degrading", color: "#ff4d4d", inflation: "2.5%", income: "-0.5%", driver: "Household debt at 130% of GDP", source: "BOT, ADB" }
+        "DEU": { status: "Going Down 📉", color: "#ff4d4d", gdp: "0.3%", inflation: "2.1%", driver: "Industrial stagnation & high energy cost headwinds", source: "IMF / Eurostat" },
+        "FRA": { status: "Going Down 📉", color: "#ff4d4d", gdp: "0.9%", inflation: "2.3%", driver: "Fiscal contraction & compressed business spending", source: "Insee France" },
+        "IND": { status: "Going Up 📈", color: "#39ff14", gdp: "6.5%", inflation: "4.5%", driver: "Surging manufacturing infrastructure & technology investments", source: "RBI / World Bank" },
+        "BGD": { status: "Going Up 📈", color: "#39ff14", gdp: "5.4%", inflation: "7.2%", driver: "Export structural adjustment & recovery execution", source: "Bangladesh Bank" },
+        "THA": { status: "Going Down 📉", color: "#ff4d4d", gdp: "2.5%", inflation: "1.8%", driver: "Household debt weight at 130% of domestic GDP", source: "Bank of Thailand" },
+        "IDN": { status: "Stable ➡️", color: "#f2a93b", gdp: "5.1%", inflation: "2.8%", driver: "Resilient internal consumer consumption spending buffers", source: "Bank Indonesia" },
+        "PHL": { status: "Stable ➡️", color: "#f2a93b", gdp: "5.8%", inflation: "3.2%", driver: "Remittance inflow expansion balancing local demand", source: "PSA Philippines" },
+        "VNM": { status: "Going Up 📈", color: "#39ff14", gdp: "7.1%", inflation: "3.5%", driver: "Supply-chain relocation capture & trade growth acceleration", source: "GSO Vietnam" },
+        "AFR": { status: "Stable ➡️", color: "#f2a93b", gdp: "4.3%", inflation: "9.1%", driver: "Divergent resource export dependency variance constraints", source: "African Dev Bank" }
     }
 };
 
@@ -159,41 +169,3 @@ function calculateUesi() {
         badge.innerText = "⚠️ Systemic Deflationary Bust";
         badge.style.backgroundColor = "#2c1515";
         badge.style.color = "#ff6b6b";
-    } else if (computedScore >= -1.0 && computedScore <= 1.0) {
-        badge.innerText = "🔄 Fragile Transition Phase";
-        badge.style.backgroundColor = "#2c2515";
-        badge.style.color = "#f2a93b";
-    } else {
-        badge.innerText = "✅ Stable Growth Expansion";
-        badge.style.backgroundColor = "#152c1e";
-        badge.style.color = "#39ff14";
-    }
-}
-
-function updateRegionPanel() {
-    const code = document.getElementById('regionSelector').value;
-    const reg = staticFallbackData.regions[code];
-    
-    document.getElementById('regStatusPill').innerText = reg.status;
-    document.getElementById('regStatusPill').style.backgroundColor = reg.color;
-    document.getElementById('lblStatus').innerText = reg.status;
-    document.getElementById('lblInflation').innerText = reg.inflation;
-    document.getElementById('lblIncome').innerText = reg.income;
-    document.getElementById('lblDriver').innerText = reg.driver;
-    document.getElementById('lblSource').innerText = reg.source;
-}
-
-// 📡 REAL EMBEDDED API INTEGRATION FUNCTION
-function triggerLiveFetch() {
-    const consoleBox = document.getElementById('feedConsole');
-    consoleBox.style.display = "block";
-    consoleBox.innerText = "📡 Querying live open API data streams...";
-
-    // Accesses an open public ticker stream engine directly in the browser
-    fetch('https://er-api.com')
-        .then(res => {
-            if (!res.ok) throw new Error("Connection anomaly.");
-            return res.json();
-        })
-        .then(data => {
-            // Using reverse currency conversions to capture underlying baseline commodity asset valuation metrics
