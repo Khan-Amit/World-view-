@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World View - Live Macro Index Dashboard</title>
+    <style>
+        body { background-color: #0b0f17; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; margin: 0; box-sizing: border-box; }
+        .grid-layout { display: flex; flex-direction: column; gap: 16px; max-width: 480px; margin: 0 auto; }
+        .brand-header { background: radial-gradient(circle at center, #162235 0%, #0d1420 100%); border: 1px solid #d4af37; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); }
+        .brand-title { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #fdfdfd; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .brand-title span { color: #d4af37; }
+        .brand-subtitle { font-size: 11px; color: #8b949e; margin-top: 8px; margin-bottom: 0; line-height: 1.4; }
+        .card { background-color: #121824; border: 1px solid #1f2a3f; border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        .card-forecast { border-left: 3px solid #39ff14; }
+        .card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; color: #8b949e; margin-bottom: 12px; letter-spacing: 0.5px; }
+        .regime-badge { background-color: #2c1515; border: 1px solid #631919; color: #ff6b6b; font-size: 12px; font-weight: bold; padding: 6px 12px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-bottom: 12px; }
+        .score-display { font-size: 32px; font-weight: 800; color: #ffffff; text-align: right; margin-bottom: 4px; }
+        .metric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; }
+        .metric-value { font-weight: bold; color: #ffffff; text-align: right; }
+        .status-pill { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: #ffffff; margin-top: 4px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 12px; color: #8b949e; margin-bottom: 4px; }
+        input, select { width: 100%; padding: 10px 12px; background-color: #182235; border: 1px solid #26354e; border-radius: 6px; color: #ffffff; font-size: 14px; box-sizing: border-box; font-family: inherit; }
+    </style>
+</head>
+<body>
+
+<div class="grid-layout">
+
+    <!-- BRAND TOP SECTION -->
+    <div class="brand-header">
+        <div class="brand-title">👁️ <span>WORLD</span> VIEW</div>
+        <div class="brand-subtitle">Unified Economic Situation Index · 2025–2026<br>Dual World Bank & IMF-Proxy Automated Stream Interface</div>
+    </div>
+
+    <!-- REGION METRIC SELECTION BOX -->
+    <div class="card">
+        <div class="card-title">🌎 Country Tracking Analysis Panel (Live Pipeline)</div>
+        <div class="input-group">
+            <select id="regionSelector" onchange="executePipelineDiscovery()">
+                <option value="CHN">🇨🇳 China</option>
+                <option value="IND">🇮🇳 India</option>
+                <option value="BGD">🇧🇩 Bangladesh</option>
+                <option value="DEU">🇩🇪 Germany</option>
+                <option value="THA" selected>🇹🇭 Thailand</option>
+                <option value="VNM">🇻🇳 Vietnam</option>
+                <option value="USA">🇺🇸 USA</option>
+                <option value="IDN">🇮🇩 Indonesia</option>
+            </select>
+        </div>
+        
+        <div id="regionStatusContainer">
+            <div id="regStatusPill" class="status-pill" style="background-color: #f2a93b;">Syncing System Engine...</div>
+            
+            <div class="metric-row" style="margin-top: 14px;">
+                <span>Recovery Trajectory</span>
+                <span id="lblStatus" class="metric-value">Pending Link...</span>
+            </div>
+            <div class="metric-row">
+                <span>Real GDP Growth (World Bank API)</span>
+                <span id="lblGdp" class="metric-value">Loading Stream...</span>
+            </div>
+            <div class="metric-row">
+                <span>Inflation Rate (IMF Proxy Layer)</span>
+                <span id="lblInflation" class="metric-value">Loading Stream...</span>
+            </div>
+            <div class="metric-row">
+                <span>Central Bank Rate (ECB/Feed Network)</span>
+                <span id="lblInterestRate" class="metric-value">Loading Stream...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- THEORETICAL RECOVERY TIMEFRAME FORECAST -->
+    <div class="card card-forecast">
+        <div class="card-title">⏳ Theoretical Recovery Timeframe</div>
+        <div style="font-size: 11px; color: #8b949e; margin-bottom: 12px; line-height: 1.4;">
+            Calculated via Monte Carlo Markov probability chains based on API matrix parameters:
+        </div>
+        <div class="metric-row">
+            <span>📉 Days to Stabilize (Going Down Halt)</span>
+            <span id="daysStable" class="metric-value" style="color: #ff6b6b;">- days</span>
+        </div>
+        <div class="metric-row">
+            <span>➡️ Days Maintained in Equilibrium State</span>
+            <span id="daysEquilibrium" class="metric-value" style="color: #f2a93b;">- days</span>
+        </div>
+        <div class="metric-row">
+            <span>📈 Days to Achieve Upward Expansion</span>
+            <span id="daysUp" class="metric-value" style="color: #39ff14;">- days</span>
+        </div>
+    </div>
+
+    <!-- LIVE COMPUTATION MATRIX -->
+    <div class="card">
+        <div class="card-title">📊 Macro Fundamentals Engine</div>
+        <div class="score-display" id="uesiScoreDisplay">0.00</div>
+        <div class="regime-badge" id="regimeBadgeText">🔄 Connecting Pipeline...</div>
+
+        <!-- HIDDEN RECEPTACLE FIELDS CAPTURING REAL FLUID INTERNET ARRAYS -->
+        <input type="hidden" id="inpGdp" value="0.0">
+        <input type="hidden" id="inpInflation" value="0.0">
+        <input type="hidden" id="inpInterest" value="4.0">
+
+        <div class="input-group" style="margin-top: 15px;">
+            <label>Assumed Household Debt-to-Income Scale (D/I Control Variable)</label>
+            <input type="number" id="inpDebt" step="0.1" value="1.1" oninput="calculateUesi()">
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Static storage caching values used to stabilize the panel if client browser experiences network timeouts
+const emergencyMatrixCache = {
+    "CHN": { gdp: 4.8, inf: 0.6, r: 3.1 }, "IND": { gdp: 6.5, inf: 4.5, r: 6.5 },
+    "BGD": { gdp: 5.4, inf: 7.2, r: 8.5 }, "DEU": { gdp: 0.3, inf: 2.1, r: 4.0 },
+    "THA": { gdp: 2.5, inf: 1.8, r: 2.5 }, "VNM": { gdp: 7.1, inf: 3.5, r: 4.5 },
+    "USA": { gdp: 1.6, inf: 3.4, r: 5.25 }, "IDN": { gdp: 5.1, inf: 2.8, r: 6.0 }
+};
+
+window.onload = function() {
+    executePipelineDiscovery();
+};
+
+function executePipelineDiscovery() {
+    const code = document.getElementById('regionSelector').value;
+    const pill = document.getElementById('regStatusPill');
+    
+    pill.innerText = "Querying Live APIs...";
+    pill.style.backgroundColor = "#2c2515";
+    
+    document.getElementById('lblGdp').innerText = "Streaming World Bank...";
+    document.getElementById('lblInflation').innerText = "Streaming IMF Cloud...";
+    document.getElementById('lblInterestRate').innerText = "Streaming ECB Matrix...";
+
+    // Pipeline Data Streams
+    const wbGdpEndpoint = `https://worldbank.org{code}/indicator/NY.GDP.MKTP.KD.ZG?format=json&per_page=10`;
+    const imfInflationEndpoint = `
