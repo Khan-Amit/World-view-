@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>World View – Asset & Macro Dashboard</title>
     <style>
-        /* ===== global reset ===== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             background: #0b0f17;
@@ -21,7 +20,6 @@
             max-width: 520px;
             margin: 0 auto;
         }
-        /* cards */
         .brand-header {
             background: radial-gradient(circle at center, #162235 0%, #0d1420 100%);
             border: 1px solid #d4af37;
@@ -115,7 +113,6 @@
             border-top: 1px solid #1a2438;
             padding-top: 10px;
         }
-        /* table for assets */
         .asset-table {
             width: 100%;
             border-collapse: collapse;
@@ -148,6 +145,7 @@
             gap: 10px;
             align-items: center;
             margin-bottom: 12px;
+            flex-wrap: wrap;
         }
         .scenario-selector label {
             margin-bottom: 0;
@@ -157,6 +155,7 @@
         .scenario-selector select {
             width: auto;
             flex: 1;
+            min-width: 120px;
         }
         .badge-scenario {
             font-size: 11px;
@@ -195,6 +194,20 @@
             flex: 1;
             min-width: 100px;
         }
+        .refresh-btn {
+            background: #1a2438;
+            border: 1px solid #26354e;
+            color: #c9d1d9;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        .refresh-btn:hover {
+            background: #26354e;
+            border-color: #d4af37;
+        }
     </style>
 </head>
 <body>
@@ -208,7 +221,7 @@
         </div>
     </div>
 
-    <!-- Country Panel (existing) -->
+    <!-- Country Panel -->
     <div class="card">
         <div class="card-title">🌎 Country Tracking Analysis Panel (Live API)</div>
         <div class="input-group">
@@ -250,7 +263,7 @@
         </div>
     </div>
 
-    <!-- Forecast card (existing) -->
+    <!-- Forecast card -->
     <div class="card card-forecast">
         <div class="card-title">⏳ Theoretical Recovery Timeframe</div>
         <div style="font-size:11px;color:#8b949e;margin-bottom:12px;line-height:1.4;">
@@ -270,9 +283,12 @@
         </div>
     </div>
 
-    <!-- === NEW: Asset & Currency Dashboard with 3‑Year Projection Matrix === -->
+    <!-- ASSET & CURRENCY DASHBOARD -->
     <div class="card" style="border-left: 3px solid #d4af37;">
-        <div class="card-title">📊 Asset &amp; Currency Dashboard · 3‑Year Projection Matrix</div>
+        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>📊 Asset &amp; Currency · 3‑Year Projection</span>
+            <button class="refresh-btn" onclick="refreshAssetData()">⟳ Refresh</button>
+        </div>
 
         <div class="scenario-selector">
             <label for="scenarioSelect">Scenario:</label>
@@ -296,18 +312,18 @@
                     </tr>
                 </thead>
                 <tbody id="assetTableBody">
-                    <!-- rows will be injected by JavaScript -->
+                    <!-- rows injected by JavaScript -->
                 </tbody>
             </table>
         </div>
 
-        <div class="last-updated" id="assetLastUpdated">⏱ Asset data: fetching…</div>
+        <div class="last-updated" id="assetLastUpdated">⏱ Asset data: loading…</div>
         <div style="font-size:10px;color:#5a6470;margin-top:6px;">
-            Sources: CoinGecko (crypto), ExchangeRate-API (FX), gold-api.com (gold/silver) · Fallback values used if API fails.
+            Sources: CoinGecko (crypto), ExchangeRate.host (FX), Gold-API (metals) · Fallback values shown if API unavailable.
         </div>
     </div>
 
-    <!-- UESI card (existing) -->
+    <!-- UESI card -->
     <div class="card">
         <div class="card-title">📊 Macro Fundamentals Engine</div>
         <div class="score-display" id="uesiScoreDisplay">0.00</div>
@@ -324,7 +340,7 @@
 
 <script>
     /* ================================================================
-       EXISTING MACRO CODE (unchanged except minor updates)
+       EXISTING MACRO CODE (unchanged)
        ================================================================ */
     const emergencyMatrixCache = {
         "CHN": { gdp: 4.8, inf: 0.6, r: 3.1 }, "IND": { gdp: 6.5, inf: 4.5, r: 6.5 },
@@ -472,28 +488,27 @@
     regionSelector.addEventListener('change', executePipelineDiscovery);
 
     /* ================================================================
-       NEW: ASSET & CURRENCY DASHBOARD WITH 3‑YEAR PROJECTION
+       REVISED ASSET & CURRENCY DASHBOARD – more robust fetching
        ================================================================ */
 
     // ---- Asset definitions ----
     const assetDefs = [
-        { id: 'gold',   label: 'Gold (XAU)',       apiKey: 'gold',   fallback: 1950.0 },
-        { id: 'silver', label: 'Silver (XAG)',     apiKey: 'silver', fallback: 23.5 },
-        { id: 'oil',    label: 'WTI Crude Oil',    apiKey: 'oil',    fallback: 72.0 },
-        { id: 'btc',    label: 'Bitcoin',          apiKey: 'btc',    fallback: 45000 },
-        { id: 'eth',    label: 'Ethereum',         apiKey: 'eth',    fallback: 2800 },
-        { id: 'xrp',    label: 'Ripple (XRP)',     apiKey: 'xrp',    fallback: 0.55 },
-        { id: 'ada',    label: 'Cardano (ADA)',    apiKey: 'ada',    fallback: 0.35 },
-        { id: 'sol',    label: 'Solana (SOL)',     apiKey: 'sol',    fallback: 90 },
-        { id: 'dot',    label: 'Polkadot (DOT)',   apiKey: 'dot',    fallback: 7.0 },
-        { id: 'eur',    label: 'USD/EUR',          apiKey: 'eur',    fallback: 0.92 },
-        { id: 'cny',    label: 'USD/CNY',          apiKey: 'cny',    fallback: 7.25 },
-        { id: 'rub',    label: 'USD/RUB',          apiKey: 'rub',    fallback: 92.0 },
-        { id: 'inr',    label: 'USD/INR',          apiKey: 'inr',    fallback: 83.5 }
+        { id: 'gold',   label: 'Gold (XAU)',       fallback: 1950.0 },
+        { id: 'silver', label: 'Silver (XAG)',     fallback: 23.5 },
+        { id: 'oil',    label: 'WTI Crude Oil',    fallback: 72.0 },
+        { id: 'btc',    label: 'Bitcoin',          fallback: 45000 },
+        { id: 'eth',    label: 'Ethereum',         fallback: 2800 },
+        { id: 'xrp',    label: 'Ripple (XRP)',     fallback: 0.55 },
+        { id: 'ada',    label: 'Cardano (ADA)',    fallback: 0.35 },
+        { id: 'sol',    label: 'Solana (SOL)',     fallback: 90 },
+        { id: 'dot',    label: 'Polkadot (DOT)',   fallback: 7.0 },
+        { id: 'eur',    label: 'USD/EUR',          fallback: 0.92 },
+        { id: 'cny',    label: 'USD/CNY',          fallback: 7.25 },
+        { id: 'rub',    label: 'USD/RUB',          fallback: 92.0 },
+        { id: 'inr',    label: 'USD/INR',          fallback: 83.5 }
     ];
 
-    // ---- Scenario growth rates (annual) for each asset ----
-    // For currencies, rate is the annual change in the exchange rate (USD per unit of foreign currency)
+    // ---- Scenario growth rates (annual) ----
     const scenarioRates = {
         optimistic: {
             gold: 0.08, silver: 0.10, oil: 0.05, btc: 0.50, eth: 0.45, xrp: 0.40, ada: 0.35, sol: 0.60, dot: 0.50,
@@ -509,24 +524,36 @@
         }
     };
 
-    // ---- current prices storage ----
     let currentPrices = {};
     let priceFetchTime = null;
 
-    // ---- DOM refs for asset table ----
     const assetTableBody = document.getElementById('assetTableBody');
     const scenarioSelect = document.getElementById('scenarioSelect');
     const scenarioLabel = document.getElementById('scenarioLabel');
     const assetLastUpdated = document.getElementById('assetLastUpdated');
 
-    // ---- fetch functions ----
+    // ---- Fetch helpers with fallback ----
+    async function fetchWithFallback(url, fallback, transform = null) {
+        try {
+            const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            if (transform) {
+                const val = transform(data);
+                if (val !== null && val !== undefined && !isNaN(val)) return val;
+            }
+            return fallback;
+        } catch (e) {
+            console.warn(`Fetch failed for ${url}:`, e.message);
+            return fallback;
+        }
+    }
+
     async function fetchCryptoPrices() {
         const ids = ['bitcoin','ethereum','ripple','cardano','solana','polkadot'];
         const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('CoinGecko error');
-        const data = await res.json();
-        // map to our keys: btc, eth, xrp, ada, sol, dot
+        const data = await fetchWithFallback(url, null, (d) => d);
+        if (!data) return null;
         return {
             btc: data.bitcoin?.usd || null,
             eth: data.ethereum?.usd || null,
@@ -538,10 +565,9 @@
     }
 
     async function fetchExchangeRates() {
-        const url = 'https://api.exchangerate-api.com/v4/latest/USD';
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Exchange rate API error');
-        const data = await res.json();
+        const url = 'https://api.exchangerate.host/latest?base=USD';
+        const data = await fetchWithFallback(url, null, (d) => d);
+        if (!data || !data.rates) return null;
         return {
             eur: data.rates.EUR || null,
             cny: data.rates.CNY || null,
@@ -551,49 +577,31 @@
     }
 
     async function fetchGoldSilver() {
-        // gold-api.com free endpoints (no key)
-        const [goldRes, silverRes] = await Promise.all([
-            fetch('https://www.gold-api.com/price/XAU'),
-            fetch('https://www.gold-api.com/price/XAG')
-        ]);
-        if (!goldRes.ok || !silverRes.ok) throw new Error('Gold/Silver API error');
-        const goldData = await goldRes.json();
-        const silverData = await silverRes.json();
-        return {
-            gold: goldData.price || null,
-            silver: silverData.price || null
-        };
+        // Gold-API.com (free, no key)
+        const gold = await fetchWithFallback('https://www.gold-api.com/price/XAU', null, (d) => d.price);
+        const silver = await fetchWithFallback('https://www.gold-api.com/price/XAG', null, (d) => d.price);
+        return { gold, silver };
     }
 
-    // Oil: we don't have a free reliable API, so we keep fallback (or we could fetch from a public source)
-    // We'll just use fallback for oil.
-
-    // ---- master fetch ----
+    // ---- Master fetch ----
     async function fetchAllAssetPrices() {
         const results = {};
 
-        // crypto
-        try {
-            const crypto = await fetchCryptoPrices();
-            Object.assign(results, crypto);
-        } catch (e) { console.warn('Crypto fetch failed:', e); }
+        // Crypto
+        const crypto = await fetchCryptoPrices();
+        if (crypto) Object.assign(results, crypto);
 
-        // exchange rates
-        try {
-            const fx = await fetchExchangeRates();
-            Object.assign(results, fx);
-        } catch (e) { console.warn('FX fetch failed:', e); }
+        // FX
+        const fx = await fetchExchangeRates();
+        if (fx) Object.assign(results, fx);
 
-        // gold/silver
-        try {
-            const gs = await fetchGoldSilver();
-            Object.assign(results, gs);
-        } catch (e) { console.warn('Gold/Silver fetch failed:', e); }
+        // Gold/Silver
+        const gs = await fetchGoldSilver();
+        if (gs.gold !== null) results.gold = gs.gold;
+        if (gs.silver !== null) results.silver = gs.silver;
 
-        // oil: keep fallback
-        results.oil = null; // will use fallback
-
-        // assign fallbacks for missing
+        // Oil – keep fallback
+        // Set fallback for any missing key
         assetDefs.forEach(def => {
             const key = def.id;
             if (results[key] === undefined || results[key] === null) {
@@ -603,11 +611,12 @@
 
         currentPrices = results;
         priceFetchTime = new Date();
-        assetLastUpdated.innerText = `⏱ Asset data: ${priceFetchTime.toLocaleTimeString()}`;
+        const timeStr = priceFetchTime.toLocaleTimeString();
+        assetLastUpdated.innerText = `⏱ Asset data: ${timeStr}`;
         return results;
     }
 
-    // ---- projection calculation ----
+    // ---- Projection & rendering ----
     function projectPrices(prices, scenarioKey) {
         const rates = scenarioRates[scenarioKey];
         const projected = {};
@@ -624,7 +633,6 @@
         return projected;
     }
 
-    // ---- render table ----
     function renderAssetTable(prices, scenarioKey) {
         const projected = projectPrices(prices, scenarioKey);
         let html = '';
@@ -649,32 +657,45 @@
         assetTableBody.innerHTML = html;
     }
 
-    // ---- update asset dashboard ----
-    async function updateAssetDashboard() {
+    // ---- Update asset dashboard (with loading state) ----
+    async function updateAssetDashboard(showLoading = true) {
+        if (showLoading) {
+            assetLastUpdated.innerText = '⏱ Asset data: fetching…';
+        }
         const scenarioKey = scenarioSelect.value;
         const labelMap = { optimistic: '🚀 Optimistic', base: '⚖️ Base', pessimistic: '⚠️ Pessimistic' };
         scenarioLabel.innerText = labelMap[scenarioKey] || 'Base';
 
-        // if we have no current prices or they are old (>5 min), refetch
-        if (!currentPrices || !priceFetchTime || (new Date() - priceFetchTime) > 5 * 60 * 1000) {
-            assetLastUpdated.innerText = '⏱ Asset data: fetching…';
+        // If we have no data or data is older than 2 minutes, refetch
+        if (!currentPrices || !priceFetchTime || (new Date() - priceFetchTime) > 2 * 60 * 1000) {
             await fetchAllAssetPrices();
         }
         renderAssetTable(currentPrices, scenarioKey);
     }
 
-    // ---- event listeners ----
+    // ---- Manual refresh ----
+    async function refreshAssetData() {
+        assetLastUpdated.innerText = '⏱ Asset data: refreshing…';
+        await fetchAllAssetPrices();
+        renderAssetTable(currentPrices, scenarioSelect.value);
+    }
+    window.refreshAssetData = refreshAssetData;
+
+    // ---- Event listeners ----
     scenarioSelect.addEventListener('change', () => {
-        updateAssetDashboard();
+        updateAssetDashboard(false); // don't refetch, just re-render
     });
 
-    // initial load for assets
+    // ---- Initial load ----
     window.addEventListener('load', function() {
-        // existing macro
+        // Macro
         setTimeout(executePipelineDiscovery, 80);
-        // asset dashboard
-        setTimeout(updateAssetDashboard, 150);
-        // refresh assets every 5 min
+        // Asset dashboard – initial fetch and render
+        setTimeout(async () => {
+            await fetchAllAssetPrices();
+            renderAssetTable(currentPrices, scenarioSelect.value);
+        }, 150);
+        // Auto-refresh every 5 minutes
         setInterval(() => {
             fetchAllAssetPrices().then(() => {
                 renderAssetTable(currentPrices, scenarioSelect.value);
