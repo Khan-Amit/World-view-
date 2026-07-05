@@ -3,37 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World View - Live Macro Index Dashboard</title>
+    <title>World View – Asset & Macro Dashboard</title>
     <style>
-        body { background-color: #0b0f17; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; margin: 0; box-sizing: border-box; }
-        .grid-layout { display: flex; flex-direction: column; gap: 16px; max-width: 480px; margin: 0 auto; }
-        .brand-header { background: radial-gradient(circle at center, #162235 0%, #0d1420 100%); border: 1px solid #d4af37; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); }
-        .brand-title { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #fdfdfd; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        /* ===== global reset ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0b0f17;
+            color: #c9d1d9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 12px;
+            margin: 0;
+        }
+        .grid-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        /* cards */
+        .brand-header {
+            background: radial-gradient(circle at center, #162235 0%, #0d1420 100%);
+            border: 1px solid #d4af37;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+        }
+        .brand-title {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #fdfdfd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
         .brand-title span { color: #d4af37; }
-        .brand-subtitle { font-size: 11px; color: #8b949e; margin-top: 8px; margin-bottom: 0; line-height: 1.4; }
-        .card { background-color: #121824; border: 1px solid #1f2a3f; border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+        .brand-subtitle {
+            font-size: 11px;
+            color: #8b949e;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        .card {
+            background: #121824;
+            border: 1px solid #1f2a3f;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
         .card-forecast { border-left: 3px solid #39ff14; }
-        .card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; color: #8b949e; margin-bottom: 12px; letter-spacing: 0.5px; }
-        .regime-badge { background-color: #2c1515; border: 1px solid #631919; color: #ff6b6b; font-size: 12px; font-weight: bold; padding: 6px 12px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-bottom: 12px; }
-        .score-display { font-size: 32px; font-weight: 800; color: #ffffff; text-align: right; margin-bottom: 4px; }
-        .metric-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; }
-        .metric-value { font-weight: bold; color: #ffffff; text-align: right; }
-        .status-pill { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: #ffffff; margin-top: 4px; }
-        .input-group { margin-bottom: 12px; }
-        label { display: block; font-size: 12px; color: #8b949e; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 10px 12px; background-color: #182235; border: 1px solid #26354e; border-radius: 6px; color: #ffffff; font-size: 14px; box-sizing: border-box; font-family: inherit; }
+        .card-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #8b949e;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .metric-value {
+            font-weight: bold;
+            color: #fff;
+            text-align: right;
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            margin-top: 4px;
+        }
+        .input-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            font-size: 12px;
+            color: #8b949e;
+            margin-bottom: 4px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #182235;
+            border: 1px solid #26354e;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        input:focus, select:focus {
+            outline: 1px solid #d4af37;
+            border-color: #d4af37;
+        }
+        .last-updated {
+            font-size: 10px;
+            color: #5a6470;
+            margin-top: 10px;
+            text-align: right;
+            border-top: 1px solid #1a2438;
+            padding-top: 10px;
+        }
+        /* table for assets */
+        .asset-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        .asset-table th {
+            text-align: left;
+            color: #8b949e;
+            font-weight: 600;
+            padding: 6px 4px;
+            border-bottom: 1px solid #1f2a3f;
+        }
+        .asset-table td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #1a2438;
+        }
+        .asset-table tr:last-child td { border-bottom: none; }
+        .asset-table .num {
+            text-align: right;
+            font-weight: 500;
+            color: #fff;
+        }
+        .asset-table .asset-name {
+            font-weight: 500;
+            color: #d4af37;
+        }
+        .scenario-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .scenario-selector label {
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #c9d1d9;
+        }
+        .scenario-selector select {
+            width: auto;
+            flex: 1;
+        }
+        .badge-scenario {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            background: #1a2438;
+            color: #8b949e;
+        }
+        .regime-badge {
+            background: #2c1515;
+            border: 1px solid #631919;
+            color: #ff6b6b;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            width: fit-content;
+            margin-bottom: 12px;
+        }
+        .score-display {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            text-align: right;
+            margin-bottom: 4px;
+        }
+        .flex-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .flex-row .input-group {
+            flex: 1;
+            min-width: 100px;
+        }
     </style>
 </head>
 <body>
 <div class="grid-layout">
+    <!-- Brand -->
     <div class="brand-header">
         <div class="brand-title">👁️ <span>WORLD</span> VIEW</div>
-        <div class="brand-subtitle">Unified Economic Situation Index · 2025–2026<br>Dual World Bank & IMF-Proxy Automated Stream Interface</div>
+        <div class="brand-subtitle">
+            Unified Economic Situation Index · 2025–2026<br>
+            Dual World Bank &amp; IMF-Proxy Automated Stream Interface
+        </div>
     </div>
+
+    <!-- Country Panel (existing) -->
     <div class="card">
         <div class="card-title">🌎 Country Tracking Analysis Panel (Live API)</div>
         <div class="input-group">
-            <select id="regionSelector" onchange="executePipelineDiscovery()">
+            <select id="regionSelector">
                 <option value="CHN">🇨🇳 China</option>
                 <option value="IND">🇮🇳 India</option>
                 <option value="BGD">🇧🇩 Bangladesh</option>
@@ -42,163 +221,466 @@
                 <option value="VNM">🇻🇳 Vietnam</option>
                 <option value="USA">🇺🇸 USA</option>
                 <option value="IDN">🇮🇩 Indonesia</option>
+                <option value="GBR">🇬🇧 United Kingdom</option>
+                <option value="FRA">🇫🇷 France</option>
+                <option value="JPN">🇯🇵 Japan</option>
+                <option value="BRA">🇧🇷 Brazil</option>
+                <option value="ZAF">🇿🇦 South Africa</option>
             </select>
         </div>
         <div id="regionStatusContainer">
-            <div id="regStatusPill" class="status-pill" style="background-color: #f2a93b;">Syncing System Engine...</div>
-            <div class="metric-row" style="margin-top: 14px;">
+            <div id="regStatusPill" class="status-pill" style="background:#f2a93b;">Syncing System Engine…</div>
+            <div class="metric-row" style="margin-top:14px;">
                 <span>Recovery Trajectory</span>
-                <span id="lblStatus" class="metric-value">Pending Link...</span>
+                <span id="lblStatus" class="metric-value">Pending Link…</span>
             </div>
             <div class="metric-row">
                 <span>Real GDP Growth (World Bank API)</span>
-                <span id="lblGdp" class="metric-value">Loading Stream...</span>
+                <span id="lblGdp" class="metric-value">Loading…</span>
             </div>
             <div class="metric-row">
                 <span>Inflation Rate (IMF Proxy Layer)</span>
-                <span id="lblInflation" class="metric-value">Loading Stream...</span>
+                <span id="lblInflation" class="metric-value">Loading…</span>
             </div>
             <div class="metric-row">
-                <span>Central Bank Rate (ECB/Feed Network)</span>
-                <span id="lblInterestRate" class="metric-value">Loading Stream...</span>
+                <span>Central Bank Rate (ECB / Feed)</span>
+                <span id="lblInterestRate" class="metric-value">Loading…</span>
             </div>
+            <div class="last-updated" id="lastUpdated">⏱ Last update: —</div>
         </div>
     </div>
+
+    <!-- Forecast card (existing) -->
     <div class="card card-forecast">
         <div class="card-title">⏳ Theoretical Recovery Timeframe</div>
-        <div style="font-size: 11px; color: #8b949e; margin-bottom: 12px; line-height: 1.4;">
+        <div style="font-size:11px;color:#8b949e;margin-bottom:12px;line-height:1.4;">
             Calculated via Monte Carlo Markov probability chains based on API matrix parameters:
         </div>
         <div class="metric-row">
             <span>📉 Days to Stabilize (Going Down Halt)</span>
-            <span id="daysStable" class="metric-value" style="color: #ff6b6b;">- days</span>
+            <span id="daysStable" class="metric-value" style="color:#ff6b6b;">– days</span>
         </div>
         <div class="metric-row">
             <span>➡️ Days Maintained in Equilibrium State</span>
-            <span id="daysEquilibrium" class="metric-value" style="color: #f2a93b;">- days</span>
+            <span id="daysEquilibrium" class="metric-value" style="color:#f2a93b;">– days</span>
         </div>
         <div class="metric-row">
             <span>📈 Days to Achieve Upward Expansion</span>
-            <span id="daysUp" class="metric-value" style="color: #39ff14;">- days</span>
+            <span id="daysUp" class="metric-value" style="color:#39ff14;">– days</span>
         </div>
     </div>
+
+    <!-- === NEW: Asset & Currency Dashboard with 3‑Year Projection Matrix === -->
+    <div class="card" style="border-left: 3px solid #d4af37;">
+        <div class="card-title">📊 Asset &amp; Currency Dashboard · 3‑Year Projection Matrix</div>
+
+        <div class="scenario-selector">
+            <label for="scenarioSelect">Scenario:</label>
+            <select id="scenarioSelect">
+                <option value="optimistic">🚀 Optimistic</option>
+                <option value="base" selected>⚖️ Base</option>
+                <option value="pessimistic">⚠️ Pessimistic</option>
+            </select>
+            <span class="badge-scenario" id="scenarioLabel">Base Case</span>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="asset-table" id="assetTable">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th class="num">Current</th>
+                        <th class="num">Year 1</th>
+                        <th class="num">Year 2</th>
+                        <th class="num">Year 3</th>
+                    </tr>
+                </thead>
+                <tbody id="assetTableBody">
+                    <!-- rows will be injected by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="last-updated" id="assetLastUpdated">⏱ Asset data: fetching…</div>
+        <div style="font-size:10px;color:#5a6470;margin-top:6px;">
+            Sources: CoinGecko (crypto), ExchangeRate-API (FX), gold-api.com (gold/silver) · Fallback values used if API fails.
+        </div>
+    </div>
+
+    <!-- UESI card (existing) -->
     <div class="card">
         <div class="card-title">📊 Macro Fundamentals Engine</div>
         <div class="score-display" id="uesiScoreDisplay">0.00</div>
-        <div class="regime-badge" id="regimeBadgeText">🔄 Connecting Pipeline...</div>
+        <div class="regime-badge" id="regimeBadgeText">🔄 Connecting Pipeline…</div>
         <input type="hidden" id="inpGdp" value="0.0">
         <input type="hidden" id="inpInflation" value="0.0">
         <input type="hidden" id="inpInterest" value="4.0">
-        <div class="input-group" style="margin-top: 15px;">
+        <div class="input-group" style="margin-top:15px;">
             <label>Assumed Household Debt-to-Income Scale (D/I Control Variable)</label>
             <input type="number" id="inpDebt" step="0.1" value="1.1" oninput="calculateUesi()">
         </div>
     </div>
 </div>
+
 <script>
-const emergencyMatrixCache = {
-    "CHN": { gdp: 4.8, inf: 0.6, r: 3.1 }, "IND": { gdp: 6.5, inf: 4.5, r: 6.5 },
-    "BGD": { gdp: 5.4, inf: 7.2, r: 8.5 }, "DEU": { gdp: 0.3, inf: 2.1, r: 4.0 },
-    "THA": { gdp: 2.5, inf: 1.8, r: 2.5 }, "VNM": { gdp: 7.1, inf: 3.5, r: 4.5 },
-    "USA": { gdp: 1.6, inf: 3.4, r: 5.25 }, "IDN": { gdp: 5.1, inf: 2.8, r: 6.0 }
-};
+    /* ================================================================
+       EXISTING MACRO CODE (unchanged except minor updates)
+       ================================================================ */
+    const emergencyMatrixCache = {
+        "CHN": { gdp: 4.8, inf: 0.6, r: 3.1 }, "IND": { gdp: 6.5, inf: 4.5, r: 6.5 },
+        "BGD": { gdp: 5.4, inf: 7.2, r: 8.5 }, "DEU": { gdp: 0.3, inf: 2.1, r: 4.0 },
+        "THA": { gdp: 2.5, inf: 1.8, r: 2.5 }, "VNM": { gdp: 7.1, inf: 3.5, r: 4.5 },
+        "USA": { gdp: 1.6, inf: 3.4, r: 5.25 }, "IDN": { gdp: 5.1, inf: 2.8, r: 6.0 },
+        "GBR": { gdp: 0.5, inf: 2.2, r: 4.75 }, "FRA": { gdp: 0.8, inf: 2.0, r: 4.25 },
+        "JPN": { gdp: 1.2, inf: 2.5, r: 0.1 }, "BRA": { gdp: 2.9, inf: 4.0, r: 11.75 },
+        "ZAF": { gdp: 1.2, inf: 5.5, r: 8.25 }
+    };
+    const countryNameMap = { "CHN":"China","IND":"India","BGD":"Bangladesh","DEU":"Germany","THA":"Thailand","VNM":"Vietnam","USA":"United States","IDN":"Indonesia","GBR":"United Kingdom","FRA":"France","JPN":"Japan","BRA":"Brazil","ZAF":"South Africa" };
 
-window.onload = function() { executePipelineDiscovery(); };
+    const regionSelector = document.getElementById('regionSelector');
+    const regStatusPill = document.getElementById('regStatusPill');
+    const lblStatus = document.getElementById('lblStatus');
+    const lblGdp = document.getElementById('lblGdp');
+    const lblInflation = document.getElementById('lblInflation');
+    const lblInterestRate = document.getElementById('lblInterestRate');
+    const lastUpdated = document.getElementById('lastUpdated');
+    const inpGdp = document.getElementById('inpGdp');
+    const inpInflation = document.getElementById('inpInflation');
+    const inpInterest = document.getElementById('inpInterest');
+    const inpDebt = document.getElementById('inpDebt');
+    const daysStable = document.getElementById('daysStable');
+    const daysEquilibrium = document.getElementById('daysEquilibrium');
+    const daysUp = document.getElementById('daysUp');
+    const uesiScoreDisplay = document.getElementById('uesiScoreDisplay');
+    const regimeBadgeText = document.getElementById('regimeBadgeText');
 
-function executePipelineDiscovery() {
-    const code = document.getElementById('regionSelector').value;
-    const pill = document.getElementById('regStatusPill');
-    pill.innerText = "Querying Live APIs...";
-    pill.style.backgroundColor = "#2c2515";
-    
-    document.getElementById('lblGdp').innerText = "Streaming World Bank...";
-    document.getElementById('lblInflation').innerText = "Streaming IMF Cloud...";
-    document.getElementById('lblInterestRate').innerText = "Streaming ECB Matrix...";
+    async function fetchWorldBank(countryCode, indicator) {
+        const url = `https://api.worldbank.org/v2/country/${countryCode}/indicator/${indicator}?format=json&per_page=10`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data || !Array.isArray(data) || data.length < 2) throw new Error('Malformed');
+        const arr = data[1];
+        if (!Array.isArray(arr)) throw new Error('No data');
+        const entry = arr.find(item => item && item.value !== null && item.value !== undefined);
+        if (!entry) throw new Error('No valid value');
+        return parseFloat(entry.value);
+    }
 
-    const gdpUrl = `https://worldbank.org{code}/indicator/NY.GDP.MKTP.KD.ZG?format=json&per_page=10`;
-    const infUrl = `https://worldbank.org{code}/indicator/FP.CPI.TOTL.ZG?format=json&per_page=10`;
+    async function executePipelineDiscovery() {
+        const code = regionSelector.value;
+        regStatusPill.innerText = "Querying Live APIs…";
+        regStatusPill.style.backgroundColor = "#2c2515";
+        lblStatus.innerText = "Fetching…";
+        lblGdp.innerText = "Streaming…";
+        lblInflation.innerText = "Streaming…";
+        lblInterestRate.innerText = "Streaming…";
+        lastUpdated.innerText = "⏱ Last update: fetching…";
 
-    Promise.all([fetch(gdpUrl).then(r => r.json()), fetch(infUrl).then(r => r.json())])
-    .then(([gdpRes, infRes]) => {
-        // FLAT TARGET METHOD: Grabs dataset arrays securely without nested indexing crashes
-        const apiGdp = (gdpRes && gdpRes[1]) ? gdpRes[1].find(item => item.value !== null)?.value || 0 : 0;
-        const apiInf = (infRes && infRes[1]) ? infRes[1].find(item => item.value !== null)?.value || 0 : 0;
-        
-        const finalGdp = apiGdp !== 0 ? apiGdp : emergencyMatrixCache[code].gdp;
-        const finalInf = apiInf !== 0 ? apiInf : emergencyMatrixCache[code].inf;
-        const finalInt = emergencyMatrixCache[code].r;
+        let gdp = emergencyMatrixCache[code].gdp;
+        let inf = emergencyMatrixCache[code].inf;
+        let intRate = emergencyMatrixCache[code].r;
+        let apiOk = false;
 
-        document.getElementById('lblGdp').innerText = finalGdp.toFixed(1) + "%";
-        document.getElementById('lblInflation').innerText = finalInf.toFixed(1) + "%";
-        document.getElementById('lblInterestRate').innerText = finalInt.toFixed(2) + "%";
+        try {
+            const [gdpVal, infVal] = await Promise.all([
+                fetchWorldBank(code, 'NY.GDP.MKTP.KD.ZG'),
+                fetchWorldBank(code, 'FP.CPI.TOTL.ZG')
+            ]);
+            if (gdpVal !== undefined && !isNaN(gdpVal)) { gdp = gdpVal; apiOk = true; }
+            if (infVal !== undefined && !isNaN(infVal)) { inf = infVal; apiOk = true; }
+        } catch (e) { console.warn('WB fallback:', e.message); }
 
-        document.getElementById('inpGdp').value = finalGdp.toFixed(1);
-        document.getElementById('inpInflation').value = finalInf.toFixed(1);
-        document.getElementById('inpInterest').value = finalInt.toFixed(2);
+        intRate = emergencyMatrixCache[code].r;
 
-        determineTrajectory(finalGdp, finalInf);
+        lblGdp.innerText = gdp.toFixed(1) + '%';
+        lblInflation.innerText = inf.toFixed(1) + '%';
+        lblInterestRate.innerText = intRate.toFixed(2) + '%';
+        inpGdp.value = gdp.toFixed(1);
+        inpInflation.value = inf.toFixed(1);
+        inpInterest.value = intRate.toFixed(2);
+
+        const now = new Date();
+        lastUpdated.innerText = `⏱ Last update: ${now.toLocaleTimeString()} (${apiOk ? 'API' : 'cache'})`;
+
+        determineTrajectory(gdp, inf);
         calculateUesi();
-    })
-    .catch(() => { loadBackup(code); });
-}
-
-function loadBackup(code) {
-    const b = emergencyMatrixCache[code];
-    document.getElementById('lblGdp').innerText = b.gdp.toFixed(1) + "%";
-    document.getElementById('lblInflation').innerText = b.inf.toFixed(1) + "%";
-    document.getElementById('lblInterestRate').innerText = b.r.toFixed(2) + "%";
-    document.getElementById('inpGdp').value = b.gdp;
-    document.getElementById('inpInflation').value = b.inf;
-    document.getElementById('inpInterest').value = b.r;
-    determineTrajectory(b.gdp, b.inf);
-    calculateUesi();
-}
-
-function determineTrajectory(gdp, inf) {
-    const pill = document.getElementById('regStatusPill');
-    const txt = document.getElementById('lblStatus');
-    const div = gdp - inf;
-    if (gdp > 4.5 && div > 1.0) {
-        pill.innerText = txt.innerText = "Going Up 📈"; pill.style.backgroundColor = txt.style.color = "#39ff14";
-    } else if (gdp >= 2.0 && div >= -1.0) {
-        pill.innerText = txt.innerText = "Stable ➡️"; pill.style.backgroundColor = txt.style.color = "#f2a93b";
-    } else {
-        pill.innerText = txt.innerText = "Going Down 📉"; pill.style.backgroundColor = txt.style.color = "#ff4d4d";
+        regStatusPill.innerText = "✓ Live";
+        regStatusPill.style.backgroundColor = "#1a3a2a";
     }
-}
 
-function calculateUesi() {
-    const g = parseFloat(document.getElementById('inpGdp').value) || 0;
-    const i = parseFloat(document.getElementById('inpInflation').value) || 0;
-    const r = parseFloat(document.getElementById('inpInterest').value) || 0;
-    const d = parseFloat(document.getElementById('inpDebt').value) || 0;
-    const score = ((g - i) - (r * d)).toFixed(2);
-    document.getElementById('uesiScoreDisplay').innerText = score;
-    calculateProbabilityMatrix(parseFloat(score));
-    const badge = document.getElementById('regimeBadgeText');
-    if (score < -1.0) {
-        badge.innerText = "⚠️ Systemic Deflationary Bust"; badge.style.backgroundColor = "#2c1515"; badge.style.color = "#ff6b6b";
-    } else if (score >= -1.0 && score <= 1.0) {
-        badge.innerText = "🔄 Fragile Transition Phase"; badge.style.backgroundColor = "#2c2515"; badge.style.color = "#f2a93b";
-    } else {
-        badge.innerText = "✅ Stable Growth Expansion"; badge.style.backgroundColor = "#152c1e"; badge.style.color = "#39ff14";
+    function determineTrajectory(gdp, inf) {
+        const div = gdp - inf;
+        let label, color;
+        if (gdp > 4.5 && div > 1.0) { label = "Going Up 📈"; color = "#39ff14"; }
+        else if (gdp >= 2.0 && div >= -1.0) { label = "Stable ➡️"; color = "#f2a93b"; }
+        else { label = "Going Down 📉"; color = "#ff4d4d"; }
+        regStatusPill.innerText = label;
+        regStatusPill.style.backgroundColor = color;
+        lblStatus.innerText = label;
+        lblStatus.style.color = color;
     }
-}
 
-function calculateProbabilityMatrix(score) {
-    let s, e, u;
-    if (score < -1.0) {
-        s = Math.round(Math.abs(score) * 120 + 240); e = Math.round(Math.abs(score) * 60 + 150); u = Math.round(Math.abs(score) * 200 + 480);
-    } else if (score >= -1.0 && score <= 1.0) {
-        s = Math.round(Math.abs(score - 1) * 60 + 30); e = 180; u = Math.round((1.2 - score) * 110 + 90);
-    } else {
-        s = 0; e = Math.round(score * 40 + 60); u = 12;
+    function calculateUesi() {
+        const g = parseFloat(inpGdp.value) || 0;
+        const i = parseFloat(inpInflation.value) || 0;
+        const r = parseFloat(inpInterest.value) || 0;
+        const d = parseFloat(inpDebt.value) || 1.1;
+        const score = ((g - i) - (r * d));
+        uesiScoreDisplay.innerText = score.toFixed(2);
+        const badge = regimeBadgeText;
+        if (score < -1.0) {
+            badge.innerText = "⚠️ Systemic Deflationary Bust";
+            badge.style.backgroundColor = "#2c1515";
+            badge.style.color = "#ff6b6b";
+            badge.style.borderColor = "#631919";
+        } else if (score >= -1.0 && score <= 1.0) {
+            badge.innerText = "🔄 Fragile Transition Phase";
+            badge.style.backgroundColor = "#2c2515";
+            badge.style.color = "#f2a93b";
+            badge.style.borderColor = "#7a6219";
+        } else {
+            badge.innerText = "✅ Stable Growth Expansion";
+            badge.style.backgroundColor = "#152c1e";
+            badge.style.color = "#39ff14";
+            badge.style.borderColor = "#1a6b2a";
+        }
+        calculateProbabilityMatrix(score);
     }
-    document.getElementById('daysStable').innerText = s > 0 ? s + " days" : "Completed ✓";
-    document.getElementById('daysEquilibrium').innerText = e + " days";
-    document.getElementById('daysUp').innerText = u + " days";
-}
+
+    function calculateProbabilityMatrix(score) {
+        let s, e, u;
+        if (score < -1.0) {
+            const abs = Math.abs(score);
+            s = Math.round(abs * 120 + 240);
+            e = Math.round(abs * 60 + 150);
+            u = Math.round(abs * 200 + 480);
+        } else if (score >= -1.0 && score <= 1.0) {
+            s = Math.round(Math.abs(score - 1) * 60 + 30);
+            e = 180;
+            u = Math.round((1.2 - score) * 110 + 90);
+        } else {
+            s = 0;
+            e = Math.round(score * 40 + 60);
+            u = 12;
+        }
+        daysStable.innerText = s > 0 ? s + ' days' : 'Completed ✓';
+        daysEquilibrium.innerText = e + ' days';
+        daysUp.innerText = u + ' days';
+    }
+
+    regionSelector.addEventListener('change', executePipelineDiscovery);
+
+    /* ================================================================
+       NEW: ASSET & CURRENCY DASHBOARD WITH 3‑YEAR PROJECTION
+       ================================================================ */
+
+    // ---- Asset definitions ----
+    const assetDefs = [
+        { id: 'gold',   label: 'Gold (XAU)',       apiKey: 'gold',   fallback: 1950.0 },
+        { id: 'silver', label: 'Silver (XAG)',     apiKey: 'silver', fallback: 23.5 },
+        { id: 'oil',    label: 'WTI Crude Oil',    apiKey: 'oil',    fallback: 72.0 },
+        { id: 'btc',    label: 'Bitcoin',          apiKey: 'btc',    fallback: 45000 },
+        { id: 'eth',    label: 'Ethereum',         apiKey: 'eth',    fallback: 2800 },
+        { id: 'xrp',    label: 'Ripple (XRP)',     apiKey: 'xrp',    fallback: 0.55 },
+        { id: 'ada',    label: 'Cardano (ADA)',    apiKey: 'ada',    fallback: 0.35 },
+        { id: 'sol',    label: 'Solana (SOL)',     apiKey: 'sol',    fallback: 90 },
+        { id: 'dot',    label: 'Polkadot (DOT)',   apiKey: 'dot',    fallback: 7.0 },
+        { id: 'eur',    label: 'USD/EUR',          apiKey: 'eur',    fallback: 0.92 },
+        { id: 'cny',    label: 'USD/CNY',          apiKey: 'cny',    fallback: 7.25 },
+        { id: 'rub',    label: 'USD/RUB',          apiKey: 'rub',    fallback: 92.0 },
+        { id: 'inr',    label: 'USD/INR',          apiKey: 'inr',    fallback: 83.5 }
+    ];
+
+    // ---- Scenario growth rates (annual) for each asset ----
+    // For currencies, rate is the annual change in the exchange rate (USD per unit of foreign currency)
+    const scenarioRates = {
+        optimistic: {
+            gold: 0.08, silver: 0.10, oil: 0.05, btc: 0.50, eth: 0.45, xrp: 0.40, ada: 0.35, sol: 0.60, dot: 0.50,
+            eur: -0.02, cny: -0.01, rub: -0.03, inr: -0.02
+        },
+        base: {
+            gold: 0.04, silver: 0.05, oil: 0.02, btc: 0.20, eth: 0.18, xrp: 0.15, ada: 0.12, sol: 0.25, dot: 0.20,
+            eur: 0.0, cny: 0.0, rub: 0.0, inr: 0.0
+        },
+        pessimistic: {
+            gold: 0.0, silver: -0.02, oil: -0.05, btc: -0.20, eth: -0.18, xrp: -0.15, ada: -0.12, sol: -0.25, dot: -0.20,
+            eur: 0.02, cny: 0.01, rub: 0.03, inr: 0.02
+        }
+    };
+
+    // ---- current prices storage ----
+    let currentPrices = {};
+    let priceFetchTime = null;
+
+    // ---- DOM refs for asset table ----
+    const assetTableBody = document.getElementById('assetTableBody');
+    const scenarioSelect = document.getElementById('scenarioSelect');
+    const scenarioLabel = document.getElementById('scenarioLabel');
+    const assetLastUpdated = document.getElementById('assetLastUpdated');
+
+    // ---- fetch functions ----
+    async function fetchCryptoPrices() {
+        const ids = ['bitcoin','ethereum','ripple','cardano','solana','polkadot'];
+        const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('CoinGecko error');
+        const data = await res.json();
+        // map to our keys: btc, eth, xrp, ada, sol, dot
+        return {
+            btc: data.bitcoin?.usd || null,
+            eth: data.ethereum?.usd || null,
+            xrp: data.ripple?.usd || null,
+            ada: data.cardano?.usd || null,
+            sol: data.solana?.usd || null,
+            dot: data.polkadot?.usd || null
+        };
+    }
+
+    async function fetchExchangeRates() {
+        const url = 'https://api.exchangerate-api.com/v4/latest/USD';
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Exchange rate API error');
+        const data = await res.json();
+        return {
+            eur: data.rates.EUR || null,
+            cny: data.rates.CNY || null,
+            rub: data.rates.RUB || null,
+            inr: data.rates.INR || null
+        };
+    }
+
+    async function fetchGoldSilver() {
+        // gold-api.com free endpoints (no key)
+        const [goldRes, silverRes] = await Promise.all([
+            fetch('https://www.gold-api.com/price/XAU'),
+            fetch('https://www.gold-api.com/price/XAG')
+        ]);
+        if (!goldRes.ok || !silverRes.ok) throw new Error('Gold/Silver API error');
+        const goldData = await goldRes.json();
+        const silverData = await silverRes.json();
+        return {
+            gold: goldData.price || null,
+            silver: silverData.price || null
+        };
+    }
+
+    // Oil: we don't have a free reliable API, so we keep fallback (or we could fetch from a public source)
+    // We'll just use fallback for oil.
+
+    // ---- master fetch ----
+    async function fetchAllAssetPrices() {
+        const results = {};
+
+        // crypto
+        try {
+            const crypto = await fetchCryptoPrices();
+            Object.assign(results, crypto);
+        } catch (e) { console.warn('Crypto fetch failed:', e); }
+
+        // exchange rates
+        try {
+            const fx = await fetchExchangeRates();
+            Object.assign(results, fx);
+        } catch (e) { console.warn('FX fetch failed:', e); }
+
+        // gold/silver
+        try {
+            const gs = await fetchGoldSilver();
+            Object.assign(results, gs);
+        } catch (e) { console.warn('Gold/Silver fetch failed:', e); }
+
+        // oil: keep fallback
+        results.oil = null; // will use fallback
+
+        // assign fallbacks for missing
+        assetDefs.forEach(def => {
+            const key = def.id;
+            if (results[key] === undefined || results[key] === null) {
+                results[key] = def.fallback;
+            }
+        });
+
+        currentPrices = results;
+        priceFetchTime = new Date();
+        assetLastUpdated.innerText = `⏱ Asset data: ${priceFetchTime.toLocaleTimeString()}`;
+        return results;
+    }
+
+    // ---- projection calculation ----
+    function projectPrices(prices, scenarioKey) {
+        const rates = scenarioRates[scenarioKey];
+        const projected = {};
+        Object.keys(prices).forEach(key => {
+            const price = prices[key];
+            if (price === undefined || price === null) return;
+            const rate = rates[key] || 0;
+            projected[key] = {
+                y1: price * Math.pow(1 + rate, 1),
+                y2: price * Math.pow(1 + rate, 2),
+                y3: price * Math.pow(1 + rate, 3)
+            };
+        });
+        return projected;
+    }
+
+    // ---- render table ----
+    function renderAssetTable(prices, scenarioKey) {
+        const projected = projectPrices(prices, scenarioKey);
+        let html = '';
+        assetDefs.forEach(def => {
+            const key = def.id;
+            const current = prices[key] !== undefined ? prices[key] : def.fallback;
+            const proj = projected[key] || { y1: '—', y2: '—', y3: '—' };
+            const formatNum = (v) => {
+                if (v === '—' || v === undefined || v === null) return '—';
+                if (typeof v !== 'number') return '—';
+                if (Math.abs(v) > 1000) return v.toFixed(2);
+                return v.toFixed(4);
+            };
+            html += `<tr>
+                <td class="asset-name">${def.label}</td>
+                <td class="num">${formatNum(current)}</td>
+                <td class="num">${formatNum(proj.y1)}</td>
+                <td class="num">${formatNum(proj.y2)}</td>
+                <td class="num">${formatNum(proj.y3)}</td>
+            </tr>`;
+        });
+        assetTableBody.innerHTML = html;
+    }
+
+    // ---- update asset dashboard ----
+    async function updateAssetDashboard() {
+        const scenarioKey = scenarioSelect.value;
+        const labelMap = { optimistic: '🚀 Optimistic', base: '⚖️ Base', pessimistic: '⚠️ Pessimistic' };
+        scenarioLabel.innerText = labelMap[scenarioKey] || 'Base';
+
+        // if we have no current prices or they are old (>5 min), refetch
+        if (!currentPrices || !priceFetchTime || (new Date() - priceFetchTime) > 5 * 60 * 1000) {
+            assetLastUpdated.innerText = '⏱ Asset data: fetching…';
+            await fetchAllAssetPrices();
+        }
+        renderAssetTable(currentPrices, scenarioKey);
+    }
+
+    // ---- event listeners ----
+    scenarioSelect.addEventListener('change', () => {
+        updateAssetDashboard();
+    });
+
+    // initial load for assets
+    window.addEventListener('load', function() {
+        // existing macro
+        setTimeout(executePipelineDiscovery, 80);
+        // asset dashboard
+        setTimeout(updateAssetDashboard, 150);
+        // refresh assets every 5 min
+        setInterval(() => {
+            fetchAllAssetPrices().then(() => {
+                renderAssetTable(currentPrices, scenarioSelect.value);
+            });
+        }, 5 * 60 * 1000);
+    });
 </script>
 </body>
 </html>
-
