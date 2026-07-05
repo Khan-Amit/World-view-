@@ -283,7 +283,7 @@
         </div>
     </div>
 
-    <!-- ASSET & CURRENCY DASHBOARD -->
+    <!-- ASSET & CURRENCY DASHBOARD (FIXED) -->
     <div class="card" style="border-left: 3px solid #d4af37;">
         <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
             <span>📊 Asset &amp; Currency · 3‑Year Projection</span>
@@ -317,9 +317,9 @@
             </table>
         </div>
 
-        <div class="last-updated" id="assetLastUpdated">⏱ Asset data: loading…</div>
+        <div class="last-updated" id="assetLastUpdated">⏱ Asset data: loading fallback values…</div>
         <div style="font-size:10px;color:#5a6470;margin-top:6px;">
-            Sources: CoinGecko (crypto), ExchangeRate.host (FX), Gold-API (metals) · Fallback values shown if API unavailable.
+            Sources: Frankfurter (FX), Gold-API (metals), CoinGecko (crypto) · Fallback values shown if live data unavailable.
         </div>
     </div>
 
@@ -488,24 +488,27 @@
     regionSelector.addEventListener('change', executePipelineDiscovery);
 
     /* ================================================================
-       REVISED ASSET & CURRENCY DASHBOARD – more robust fetching
+       FIXED ASSET & CURRENCY DASHBOARD
+       - Always renders fallback values immediately
+       - Tries to fetch live data and updates if successful
+       - Uses reliable free APIs: Frankfurter, Gold-API, CoinGecko
        ================================================================ */
 
-    // ---- Asset definitions ----
+    // ---- Asset definitions with hardcoded fallback values ----
     const assetDefs = [
-        { id: 'gold',   label: 'Gold (XAU)',       fallback: 1950.0 },
-        { id: 'silver', label: 'Silver (XAG)',     fallback: 23.5 },
-        { id: 'oil',    label: 'WTI Crude Oil',    fallback: 72.0 },
-        { id: 'btc',    label: 'Bitcoin',          fallback: 45000 },
-        { id: 'eth',    label: 'Ethereum',         fallback: 2800 },
-        { id: 'xrp',    label: 'Ripple (XRP)',     fallback: 0.55 },
-        { id: 'ada',    label: 'Cardano (ADA)',    fallback: 0.35 },
-        { id: 'sol',    label: 'Solana (SOL)',     fallback: 90 },
-        { id: 'dot',    label: 'Polkadot (DOT)',   fallback: 7.0 },
-        { id: 'eur',    label: 'USD/EUR',          fallback: 0.92 },
-        { id: 'cny',    label: 'USD/CNY',          fallback: 7.25 },
-        { id: 'rub',    label: 'USD/RUB',          fallback: 92.0 },
-        { id: 'inr',    label: 'USD/INR',          fallback: 83.5 }
+        { id: 'gold',   label: 'Gold (XAU)',   fallback: 1950.0 },
+        { id: 'silver', label: 'Silver (XAG)', fallback: 23.5 },
+        { id: 'oil',    label: 'WTI Crude Oil', fallback: 72.0 },
+        { id: 'btc',    label: 'Bitcoin',       fallback: 45000 },
+        { id: 'eth',    label: 'Ethereum',      fallback: 2800 },
+        { id: 'xrp',    label: 'Ripple (XRP)',  fallback: 0.55 },
+        { id: 'ada',    label: 'Cardano (ADA)', fallback: 0.35 },
+        { id: 'sol',    label: 'Solana (SOL)',  fallback: 90 },
+        { id: 'dot',    label: 'Polkadot (DOT)', fallback: 7.0 },
+        { id: 'eur',    label: 'USD/EUR',       fallback: 0.92 },
+        { id: 'cny',    label: 'USD/CNY',       fallback: 7.25 },
+        { id: 'rub',    label: 'USD/RUB',       fallback: 92.0 },
+        { id: 'inr',    label: 'USD/INR',       fallback: 83.5 }
     ];
 
     // ---- Scenario growth rates (annual) ----
@@ -524,18 +527,23 @@
         }
     };
 
-    let currentPrices = {};
+    // ---- State ----
+    let currentPrices = {};  // will be populated with fallback then live data
     let priceFetchTime = null;
 
+    // ---- DOM refs ----
     const assetTableBody = document.getElementById('assetTableBody');
     const scenarioSelect = document.getElementById('scenarioSelect');
     const scenarioLabel = document.getElementById('scenarioLabel');
     const assetLastUpdated = document.getElementById('assetLastUpdated');
 
-    // ---- Fetch helpers with fallback ----
-    async function fetchWithFallback(url, fallback, transform = null) {
+    // ---- Helper: safe fetch with timeout and fallback ----
+    async function safeFetch(url, fallback, transform = null) {
         try {
-            const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeout);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             if (transform) {
@@ -544,15 +552,16 @@
             }
             return fallback;
         } catch (e) {
-            console.warn(`Fetch failed for ${url}:`, e.message);
+            console.warn(`safeFetch failed for ${url}:`, e.message);
             return fallback;
         }
     }
 
-    async function fetchCryptoPrices() {
+    // ---- Individual fetchers ----
+    async function fetchCrypto() {
         const ids = ['bitcoin','ethereum','ripple','cardano','solana','polkadot'];
         const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`;
-        const data = await fetchWithFallback(url, null, (d) => d);
+        const data = await safeFetch(url, null, (d) => d);
         if (!data) return null;
         return {
             btc: data.bitcoin?.usd || null,
@@ -564,9 +573,10 @@
         };
     }
 
-    async function fetchExchangeRates() {
-        const url = 'https://api.exchangerate.host/latest?base=USD';
-        const data = await fetchWithFallback(url, null, (d) => d);
+    async function fetchFX() {
+        // Using Frankfurter (CORS-friendly, free)
+        const url = 'https://api.frankfurter.app/latest?from=USD';
+        const data = await safeFetch(url, null, (d) => d);
         if (!data || !data.rates) return null;
         return {
             eur: data.rates.EUR || null,
@@ -576,47 +586,51 @@
         };
     }
 
-    async function fetchGoldSilver() {
-        // Gold-API.com (free, no key)
-        const gold = await fetchWithFallback('https://www.gold-api.com/price/XAU', null, (d) => d.price);
-        const silver = await fetchWithFallback('https://www.gold-api.com/price/XAG', null, (d) => d.price);
+    async function fetchMetals() {
+        const gold = await safeFetch('https://www.gold-api.com/price/XAU', null, (d) => d.price);
+        const silver = await safeFetch('https://www.gold-api.com/price/XAG', null, (d) => d.price);
         return { gold, silver };
     }
 
-    // ---- Master fetch ----
+    // ---- Master fetch: never throws, always returns an object with all keys ----
     async function fetchAllAssetPrices() {
-        const results = {};
+        // start with fallback values
+        const fallbackMap = {};
+        assetDefs.forEach(def => { fallbackMap[def.id] = def.fallback; });
+        const results = { ...fallbackMap };
 
-        // Crypto
-        const crypto = await fetchCryptoPrices();
-        if (crypto) Object.assign(results, crypto);
+        // try to get live data and override
+        try {
+            const [crypto, fx, metals] = await Promise.all([
+                fetchCrypto(),
+                fetchFX(),
+                fetchMetals()
+            ]);
+            if (crypto) Object.assign(results, crypto);
+            if (fx) Object.assign(results, fx);
+            if (metals) {
+                if (metals.gold !== null) results.gold = metals.gold;
+                if (metals.silver !== null) results.silver = metals.silver;
+            }
+            // oil stays as fallback (no free API)
+        } catch (e) {
+            console.warn('Asset fetch error:', e);
+        }
 
-        // FX
-        const fx = await fetchExchangeRates();
-        if (fx) Object.assign(results, fx);
-
-        // Gold/Silver
-        const gs = await fetchGoldSilver();
-        if (gs.gold !== null) results.gold = gs.gold;
-        if (gs.silver !== null) results.silver = gs.silver;
-
-        // Oil – keep fallback
-        // Set fallback for any missing key
+        // Ensure every asset has a value (should already, but just in case)
         assetDefs.forEach(def => {
-            const key = def.id;
-            if (results[key] === undefined || results[key] === null) {
-                results[key] = def.fallback;
+            if (results[def.id] === undefined || results[def.id] === null) {
+                results[def.id] = def.fallback;
             }
         });
 
         currentPrices = results;
         priceFetchTime = new Date();
-        const timeStr = priceFetchTime.toLocaleTimeString();
-        assetLastUpdated.innerText = `⏱ Asset data: ${timeStr}`;
+        assetLastUpdated.innerText = `⏱ Asset data: ${priceFetchTime.toLocaleTimeString()}`;
         return results;
     }
 
-    // ---- Projection & rendering ----
+    // ---- Projection ----
     function projectPrices(prices, scenarioKey) {
         const rates = scenarioRates[scenarioKey];
         const projected = {};
@@ -633,6 +647,7 @@
         return projected;
     }
 
+    // ---- Render table ----
     function renderAssetTable(prices, scenarioKey) {
         const projected = projectPrices(prices, scenarioKey);
         let html = '';
@@ -657,19 +672,15 @@
         assetTableBody.innerHTML = html;
     }
 
-    // ---- Update asset dashboard (with loading state) ----
-    async function updateAssetDashboard(showLoading = true) {
-        if (showLoading) {
-            assetLastUpdated.innerText = '⏱ Asset data: fetching…';
+    // ---- Update asset dashboard (public) ----
+    async function updateAssetDashboard(forceRefresh = false) {
+        if (forceRefresh || !currentPrices || !priceFetchTime || (new Date() - priceFetchTime) > 2 * 60 * 1000) {
+            assetLastUpdated.innerText = '⏱ Asset data: fetching live…';
+            await fetchAllAssetPrices();
         }
         const scenarioKey = scenarioSelect.value;
         const labelMap = { optimistic: '🚀 Optimistic', base: '⚖️ Base', pessimistic: '⚠️ Pessimistic' };
         scenarioLabel.innerText = labelMap[scenarioKey] || 'Base';
-
-        // If we have no data or data is older than 2 minutes, refetch
-        if (!currentPrices || !priceFetchTime || (new Date() - priceFetchTime) > 2 * 60 * 1000) {
-            await fetchAllAssetPrices();
-        }
         renderAssetTable(currentPrices, scenarioKey);
     }
 
@@ -683,18 +694,31 @@
 
     // ---- Event listeners ----
     scenarioSelect.addEventListener('change', () => {
-        updateAssetDashboard(false); // don't refetch, just re-render
+        // just re-render with existing prices
+        renderAssetTable(currentPrices, scenarioSelect.value);
+        const labelMap = { optimistic: '🚀 Optimistic', base: '⚖️ Base', pessimistic: '⚠️ Pessimistic' };
+        scenarioLabel.innerText = labelMap[scenarioSelect.value] || 'Base';
     });
 
-    // ---- Initial load ----
+    // ---- Initialization ----
     window.addEventListener('load', function() {
         // Macro
         setTimeout(executePipelineDiscovery, 80);
-        // Asset dashboard – initial fetch and render
+
+        // Asset dashboard: load fallback first, then fetch live
         setTimeout(async () => {
+            // first, render with fallback values immediately
+            const fallbackMap = {};
+            assetDefs.forEach(def => { fallbackMap[def.id] = def.fallback; });
+            currentPrices = fallbackMap;
+            renderAssetTable(currentPrices, scenarioSelect.value);
+            assetLastUpdated.innerText = '⏱ Asset data: loading fallback values…';
+
+            // then fetch live and update
             await fetchAllAssetPrices();
             renderAssetTable(currentPrices, scenarioSelect.value);
-        }, 150);
+        }, 100);
+
         // Auto-refresh every 5 minutes
         setInterval(() => {
             fetchAllAssetPrices().then(() => {
