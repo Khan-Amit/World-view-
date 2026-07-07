@@ -285,7 +285,7 @@
         </div>
     </div>
 
-    <!-- ASSET & CURRENCY DASHBOARD – Best available APIs -->
+    <!-- ASSET & CURRENCY DASHBOARD – using currency-api + Investing.com fallback -->
     <div class="card" style="border-left: 3px solid #d4af37;">
         <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
             <span>📊 Asset &amp; Currency · 3‑Year Projection</span>
@@ -322,7 +322,7 @@
 
         <div class="last-updated" id="assetLastUpdated">⏱ Asset data: loading…</div>
         <div style="font-size:10px;color:#5a6470;margin-top:6px;">
-            Sources: Live-Rates.com (FX, metals, oil), CoinGecko (crypto) · Fallback values are approximate market levels.
+            Sources: Currency-API (live FX), Gold-API (metals), CoinGecko (crypto) · Fallback: actual Investing.com rates (USD/RUB 76.51, USD/INR 95.403).
         </div>
     </div>
 
@@ -343,7 +343,7 @@
 
 <script>
     /* ================================================================
-       MACRO CODE (unchanged)
+       MACRO CODE (unchanged – see previous)
        ================================================================ */
     const emergencyMatrixCache = {
         "CHN": { gdp: 4.8, inf: 0.6, r: 3.1 }, "IND": { gdp: 6.5, inf: 4.5, r: 6.5 },
@@ -490,10 +490,10 @@
     regionSelector.addEventListener('change', executePipelineDiscovery);
 
     /* ================================================================
-       ASSET DASHBOARD – using Live-Rates.com as primary (CORS friendly)
+       ASSET DASHBOARD – with currency-api (live RUB/INR)
        ================================================================ */
 
-    // ---- Asset definitions with today’s approximate levels ----
+    // ---- Asset definitions – fallback values now set to actual Investing.com rates ----
     const assetDefs = [
         { id: 'gold',   label: 'Gold (XAU)',       fallback: 2350.0 },
         { id: 'silver', label: 'Silver (XAG)',     fallback: 28.0 },
@@ -506,11 +506,11 @@
         { id: 'dot',    label: 'Polkadot (DOT)',   fallback: 5.5 },
         { id: 'eur',    label: 'USD/EUR',          fallback: 0.92 },
         { id: 'cny',    label: 'USD/CNY',          fallback: 7.20 },
-        { id: 'rub',    label: 'USD/RUB',          fallback: 90.0 },
-        { id: 'inr',    label: 'USD/INR',          fallback: 83.5 }
+        { id: 'rub',    label: 'USD/RUB',          fallback: 76.51 },  // actual Investing.com
+        { id: 'inr',    label: 'USD/INR',          fallback: 95.403 }  // actual Investing.com
     ];
 
-    // ---- Scenario growth rates (unchanged) ----
+    // ---- Scenario growth rates ----
     const scenarioRates = {
         optimistic: {
             gold: 0.08, silver: 0.10, oil: 0.05, btc: 0.50, eth: 0.45, xrp: 0.40, ada: 0.35, sol: 0.60, dot: 0.50,
@@ -536,7 +536,7 @@
     const assetLastUpdated = document.getElementById('assetLastUpdated');
     const dataStatusIndicator = document.getElementById('dataStatusIndicator');
 
-    // ---- Safe fetch with timeout ----
+    // ---- Safe fetch ----
     async function safeFetch(url, fallback, transform = null) {
         try {
             const controller = new AbortController();
@@ -556,59 +556,29 @@
         }
     }
 
-    // ---- Primary: Live-Rates.com (covers FX, metals, oil) ----
-    async function fetchLiveRates() {
-        const url = 'https://www.live-rates.com/rates';
+    // ---- Primary FX: currency-api (fast, CORS-friendly) ----
+    async function fetchCurrencyApi() {
+        // Uses @fawazahmed0/currency-api – returns USD rates against other currencies
+        const url = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json';
         const data = await safeFetch(url, null, (d) => d);
-        if (!data) return null;
-
-        // data is an array of objects: { currency: "XAUUSD", rate: 2350.12 }
-        const map = {};
-        data.forEach(item => {
-            if (item.currency && item.rate) {
-                map[item.currency] = item.rate;
-            }
-        });
-
-        // Map to our asset IDs
-        const result = {
-            gold: map['XAUUSD'] || null,
-            silver: map['XAGUSD'] || null,
-            oil: map['WTICOUSD'] || null,      // might be CL=F or WTI
-            eur: map['EURUSD'] ? 1 / map['EURUSD'] : null, // we want USD/EUR, so invert
-            cny: map['USDCNY'] || null,
-            rub: map['USDRUB'] || null,
-            inr: map['USDINR'] || null
-        };
-
-        // If oil not found, try alternative symbol
-        if (result.oil === null && map['CL=F']) result.oil = map['CL=F'];
-        if (result.oil === null && map['WTI']) result.oil = map['WTI'];
-
-        return result;
-    }
-
-    // ---- Fallback: Frankfurter for FX ----
-    async function fetchFrankfurter() {
-        const url = 'https://api.frankfurter.app/latest?from=USD';
-        const data = await safeFetch(url, null, (d) => d);
-        if (!data || !data.rates) return null;
+        if (!data || !data.usd) return null;
+        const rates = data.usd;
         return {
-            eur: data.rates.EUR || null,
-            cny: data.rates.CNY || null,
-            rub: data.rates.RUB || null,
-            inr: data.rates.INR || null
+            eur: rates.eur || null,
+            cny: rates.cny || null,
+            rub: rates.rub || null,
+            inr: rates.inr || null
         };
     }
 
-    // ---- Fallback: Gold-API for metals ----
+    // ---- Metals ----
     async function fetchMetals() {
         const gold = await safeFetch('https://www.gold-api.com/price/XAU', null, (d) => d.price);
         const silver = await safeFetch('https://www.gold-api.com/price/XAG', null, (d) => d.price);
         return { gold, silver };
     }
 
-    // ---- Crypto (CoinGecko) ----
+    // ---- Crypto ----
     async function fetchCrypto() {
         const ids = ['bitcoin','ethereum','ripple','cardano','solana','polkadot'];
         const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`;
@@ -632,54 +602,27 @@
 
         let liveCount = 0;
 
-        // 1. Try Live-Rates
-        let liveRates = null;
-        try {
-            liveRates = await fetchLiveRates();
-        } catch (e) { /* ignore */ }
-
-        if (liveRates) {
-            // Override with live values
-            Object.keys(liveRates).forEach(key => {
-                if (liveRates[key] !== null && !isNaN(liveRates[key])) {
-                    results[key] = liveRates[key];
-                    liveCount++;
-                }
-            });
+        // 1. FX from currency-api
+        const fx = await fetchCurrencyApi();
+        if (fx) {
+            if (fx.eur !== null) { results.eur = fx.eur; liveCount++; }
+            if (fx.cny !== null) { results.cny = fx.cny; liveCount++; }
+            if (fx.rub !== null) { results.rub = fx.rub; liveCount++; }
+            if (fx.inr !== null) { results.inr = fx.inr; liveCount++; }
         }
 
-        // If we got less than 3 live values, try fallback APIs
-        if (liveCount < 3) {
-            try {
-                const [fx, metals, crypto] = await Promise.all([
-                    fetchFrankfurter(),
-                    fetchMetals(),
-                    fetchCrypto()
-                ]);
-                if (fx) {
-                    if (fx.eur !== null) { results.eur = fx.eur; liveCount++; }
-                    if (fx.cny !== null) { results.cny = fx.cny; liveCount++; }
-                    if (fx.rub !== null) { results.rub = fx.rub; liveCount++; }
-                    if (fx.inr !== null) { results.inr = fx.inr; liveCount++; }
-                }
-                if (metals) {
-                    if (metals.gold !== null) { results.gold = metals.gold; liveCount++; }
-                    if (metals.silver !== null) { results.silver = metals.silver; liveCount++; }
-                }
-                if (crypto) {
-                    Object.assign(results, crypto);
-                    liveCount += Object.values(crypto).filter(v => v !== null).length;
-                }
-            } catch (e) { /* ignore */ }
-        } else {
-            // Still fetch crypto separately
-            try {
-                const crypto = await fetchCrypto();
-                if (crypto) {
-                    Object.assign(results, crypto);
-                    liveCount += Object.values(crypto).filter(v => v !== null).length;
-                }
-            } catch (e) { /* ignore */ }
+        // 2. Metals
+        const metals = await fetchMetals();
+        if (metals) {
+            if (metals.gold !== null) { results.gold = metals.gold; liveCount++; }
+            if (metals.silver !== null) { results.silver = metals.silver; liveCount++; }
+        }
+
+        // 3. Crypto
+        const crypto = await fetchCrypto();
+        if (crypto) {
+            Object.assign(results, crypto);
+            liveCount += Object.values(crypto).filter(v => v !== null).length;
         }
 
         // Ensure every asset has a value
@@ -768,12 +711,12 @@
     window.addEventListener('load', function() {
         setTimeout(executePipelineDiscovery, 80);
         setTimeout(async () => {
-            // Load fallbacks immediately
+            // Load fallbacks immediately – now with correct Investing.com numbers
             const fallbackMap = {};
             assetDefs.forEach(def => { fallbackMap[def.id] = def.fallback; });
             currentPrices = fallbackMap;
             renderAssetTable(currentPrices, scenarioSelect.value);
-            assetLastUpdated.innerText = '⏱ Asset data: loading fallback values…';
+            assetLastUpdated.innerText = '⏱ Asset data: loading fallback values (Investing.com rates)…';
             dataStatusIndicator.textContent = '⚡ Fallback';
             dataStatusIndicator.className = 'status-indicator fallback';
 
